@@ -26,7 +26,8 @@
  */
 module easy {
     /**
-     * Created by Administrator on 2014/11/6.
+     * 方便便捷的监听utils
+     * 它的计时单位是帧
      */
 
     export class HeartBeat {
@@ -85,7 +86,13 @@ module easy {
                     if (!item.func.arguments || item.func.arguments.length == 0) {//无参数要求
                         item.func.call(item.thisArg);
                     } else {//func有参数,参数boolean返回true代表最后一次call, 参数number表示第几次调用
-
+                        if (item.func.arguments[0] instanceof Boolean) {
+                            item.func.call(item.thisArg, item.del);
+                        } else if (item.func.arguments[0] instanceof Number) {
+                            item.func.call(item.thisArg, item.loopcount);
+                        } else {
+                            item.func.call(item.thisArg, null);
+                        }
                     }
                 }
             }
@@ -94,13 +101,14 @@ module easy {
 
         /**
          *  添加呼吸监听
+         * @param thisArg 方法的this宿主
          * @param respone call back 的方法
          * @param heartRrate 心率, 从加入开始计算,当达到frameCount的值时,进行一次func call
          * @param repeat 要循环 call func 的次数
          * @param params 回传的参数值
          */
         public static addListener(thisArg:any, respone:Function, heartRrate:number = 1, repeat:number = -1, delay:number = 0, params:Array<any> = null):boolean {
-            if (respone == null || HeartBeat.isContainerListener(respone)) return false;//同一个func防止重复添加
+            if (respone == null || HeartBeat.isContainerListener(thisArg, respone)) return false;//同一个func防止重复添加
             var item:BeatItem = ObjectPool.getByClass(BeatItem);
             //if (GlobalSetting.DEV_MODEL) item.traceMsg = new Error().getStackTrace();//调试信息追踪
             item.setData(thisArg, respone, heartRrate, repeat, delay, params);
@@ -111,6 +119,7 @@ module easy {
 
         /**
          * 移除呼吸
+         * @param thisArg 方法的this宿主
          * @param respone
          */
         public static removeListener(thisArg:any, respone:Function):void {
@@ -125,13 +134,14 @@ module easy {
 
         /**
          * 呼吸中是否包含指定的回调func
+         * @param thisArg 方法的this宿主
          * @param respone
          * @return
          */
-        public static isContainerListener(respone:Function):boolean {
+        public static isContainerListener(thisArg:any, respone:Function):boolean {
             var i:number = 0;
             for (i = 0; i < HeartBeat._listeners.length; i++) {
-                if (HeartBeat._listeners[i].func == respone && !HeartBeat._listeners[i].del) {
+                if (HeartBeat._listeners[i].thisArg == thisArg && HeartBeat._listeners[i].func == respone && !HeartBeat._listeners[i].del) {
                     return true;
                 }
             }
@@ -149,14 +159,13 @@ module easy {
         /**
          * 打印输出方法的追踪信息以及活动状态
          * @return
-         *
          */
         public static getHearBeatTrace():string {
             var i:number = 0;
             var msg:string = "";
             var item:BeatItem = null;
             msg += "总数:" + HeartBeat._listeners.length + "\n";
-            msg += "-----------------------------------------------------\n";
+            msg += "========================================================\n";
             for (i = 0; i < HeartBeat._listeners.length; i++) {
                 item = HeartBeat._listeners[i];
                 if (item) {
@@ -164,23 +173,34 @@ module easy {
                     msg += "del=" + item.del + ", count=" + item.count + ", index=" + item.index + ", loop=" + item.loop + ", loopCount=" + item.loopcount + "\n";
                     //msg += "追踪信息:\n";
                     //if (StringUtil.isUsage(item.traceMsg))msg += item.traceMsg.substring(item.traceMsg.indexOf("]") + 2, item.traceMsg.length)  + "\n";
-                    msg += "-----------------------------------------------------\n";
+                    msg += "------------------------------------\n";
                 }
             }
+            msg += "========================================================\n";
             return msg;
         }
     }
 
     class BeatItem {
+        //要回call的方法
         public func:Function = null;
+        //方法的宿主
         public thisArg:any = null;
+        //频率
         public count:number = 0;
+        //当前计数频率
         public index:number = 0;
+        //循环次数
         public loop:number = 0;
+        //已经循环的次数
         public loopcount:number = 0;
+        //延迟
         public delay:number = 0;
+        //完成,删除标记
         public del:boolean = false;
+        //trace信息追踪
         public traceMsg:string = null;
+        //call back function的参数
         public param:Array<any> = null;
 
         public setData(thisArg:any, respone:Function, heartRrate:number, repeat:number, delay:number, params:Array<any>):void {

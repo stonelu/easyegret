@@ -25,7 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 module easy {
-
+    /**
+     * 一个文字提示显示
+     */
     export class MessageTips extends BaseGroup {
         private static _instance:MessageTips = null;//
         private _dulation:number = 30;//停留时间

@@ -26,17 +26,40 @@
  */
 module easy {
     /**
-     * Created by Administrator on 2014/11/5.
+     * 这个是一个点对点的事件派发管理器
+     * 系统的逻辑事件和协议事件,都会经过这里派发出去
+     * 集中控制的好处是,可以插入一些预处理,过滤和控制流程
      */
     export class EventManager {
-        public static PREFIX:string = "EVENT_";
+        /**
+         * 协议的的事件,会自动加一个前缀
+         * @type {string}
+         */
+        public static PREFIX:string = "PKT_";
+        /**
+         * 协议事件的监听列表
+         * @type {{}}
+         */
         public static packetEventList:Object = {};//server event list
-        public static packetCache:Object = {};
-        public static eventCache:Object = {};
+        /**
+         * 逻辑时间的监听列表
+         * @type {{}}
+         */
+        private static commEventList:Object = {};//comm event list
+        /**
+         * 事件回收池
+         * @type {{}}
+         */
+        private static eventCachePool:Object = {};
+
         public static errorCheckFunc:Function = null;//错误包检测
+        /**
+         * MessageHandle协议处理的方法注入,有限该方法调用处理,再进行监听的派发
+         * 保证做到数据先处理,view再做响应
+         * @type {null}
+         */
         public static packetFunc:Function = null;//路由控制器转发专用,会在pkt派发之前路由控制,预处理数据
 
-        private static commEventList:Object = {};//comm event list
 
         /**
          * 取得一个对应id的协议包
@@ -66,12 +89,17 @@ module easy {
         //    }
         //    packetArray.push(packet);
         //}
-
+        /**
+         * 获取一个type类型的事件对象
+         * 如果事件对象池中有回收的同类型事件对象,优先使用
+         * @param type
+         * @returns {*}
+         */
         public static getEvent(type:string):MyEvent {
-            var eventArray:Array<MyEvent> = EventManager.eventCache[type];
+            var eventArray:Array<MyEvent> = EventManager.eventCachePool[type];
             if (eventArray == null) {
                 eventArray = [];
-                EventManager.eventCache[type] = eventArray;
+                EventManager.eventCachePool[type] = eventArray;
             }
             if (eventArray.length == 0) {
                 return new MyEvent(type);
@@ -79,12 +107,16 @@ module easy {
             return eventArray.pop();
         }
 
+        /**
+         * 释放一个时间对象回事件对象池
+         * @param e
+         */
         public static releaseEvent(e:MyEvent):void {
             e.release();
-            var eventArray:Array<MyEvent> = EventManager.eventCache[e.type];
+            var eventArray:Array<MyEvent> = EventManager.eventCachePool[e.type];
             if (eventArray == null) {
                 eventArray = [];
-                EventManager.eventCache[e.type] = eventArray;
+                EventManager.eventCachePool[e.type] = eventArray;
             }
             eventArray.push(e);
         }
@@ -161,14 +193,17 @@ module easy {
         //public static send(packet:Packet):void {
         //    SocketManager.send(packet);
         //}
-
+        /**
+         * 无参数的事件快捷派发
+         * @param type 事件的类型
+         */
         public static dispatch(type:string):void {
             EventManager.dispatchEvent(EventManager.getEvent(type));
         }
 
         /**
-         * 立即输送事件,不进入队列延迟
-         * @param event
+         * 事件派发
+         * @param event 要派发的事件对象
          */
         public static dispatchEvent(e:MyEvent):void {
             var listenerList:Array<any> = EventManager.commEventList[e.type];
@@ -180,6 +215,12 @@ module easy {
             EventManager.releaseEvent(e);
         }
 
+        /**
+         * 移除事件监听
+         * @param eventType 事件的类型
+         * @param respone 对应的call back function
+         * @param thisArg 方法所在的this对象
+         */
         public static removeEventListener(eventType:string, respone:Function, thisArg:any):void {
             var listenerList:Array<Function> = EventManager.commEventList[eventType];
             if (listenerList != null) {
@@ -192,6 +233,12 @@ module easy {
             }
         }
 
+        /**
+         * 添加时间监听
+         * @param eventType 事件的类型
+         * @param respone 对应的call back function
+         * @param thisArg 方法所在的this对象
+         */
         public static addEventListener(eventType:string, respone:Function, thisArg:any):void {
             if (respone == null || EventManager.isContainerEventListener(eventType, respone, thisArg)) return;
             var listenerList:Array<any> = EventManager.commEventList[eventType];
@@ -202,6 +249,13 @@ module easy {
             listenerList.push({func: respone, owner: thisArg});
         }
 
+        /**
+         * 同样的事件监听是否已经存在,防止二次添加
+         * @param eventType 事件的类型
+         * @param respone  对应的call back function
+         * @param thisArg  方法所在的this对象
+         * @returns {boolean}  true:已经存在, false:不存在
+         */
         private static isContainerEventListener(eventType:string, respone:Function, thisArg:any):boolean {
             var listenerList:Array<any> = EventManager.commEventList["" + eventType];
             if (listenerList != null) {

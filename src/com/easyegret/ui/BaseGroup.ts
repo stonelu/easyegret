@@ -25,7 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 module easy {
-
+	/**
+	 * 简单的对DisplayObjectContainer进行扩展
+	 * 加入基础布局的算法
+	 */
 	export class BaseGroup extends egret.DisplayObjectContainer {
 		//private _width:number = 0;
 		//private _height:number = 0;

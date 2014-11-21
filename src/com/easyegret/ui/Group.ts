@@ -25,7 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 module easy {
-
+	/**
+	 * 带有默认背景的容器
+	 * 可以设置裁剪区域
+	 */
 	export class Group extends BaseGroup {
 		/**
 		 * 是否显示默认样式 ,

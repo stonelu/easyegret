@@ -26,8 +26,9 @@
  */
 module easy{
     /**
-     * 这个类是作为view页面转换的主入口类
-     * view类是比较大的开销,不同的view互相切换显示,复用率非常的高
+     * 这个类是作为win弹出管理类,控制窗口的资源加载,保证资源加载完成后再显示窗口
+     * 集中管理的好处,是可以精确控制置顶和窗口组合显示
+     * 可以在这个地方加入窗口的弹出效果和隐藏效果
      */
     export class PopupManager {
         private static _instanceDict:Object = {};//win对象的缓存字典

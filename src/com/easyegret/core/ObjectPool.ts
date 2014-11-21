@@ -26,12 +26,16 @@
  */
 module easy {
     /**
-     * Created by Administrator on 2014/11/6.
+     * 对象池,针对经常创建的对象进行 回收并复用,减少对象创建的消耗
+     * 不给垃圾回收的机会
      */
     export class ObjectPool {
         private static _dataPool:any = {};//池数据
         //public static length:number = 0;//长度
         /**
+         * 传入一个class,给你一个class对象的实例
+         * 使用class的名称作为对象映射的key
+         * 该class的构造函数必须是无参数要求
          * 从对象池中提取Object
          * @param clz 要提取的objec的Class
          * @return clz 对象的实例
@@ -48,6 +52,7 @@ module easy {
 
         /**
          * 释放object,使得objec返回到pool池,可以继续重复利用
+         * 使用class的名称作为对象映射的key
          * @param item 要返回池中的item对象
          */
         public static recycleClass(obj:any):void {
@@ -65,8 +70,7 @@ module easy {
         }
 
         /**
-         * 从对象池中提取Object
-         *
+         * 根据name从对象池中提取Object
          * @param name 要提取的objec的name
          * @param pop 是否从对象池中弹出
          * @return clz 对象的实例
@@ -120,6 +124,7 @@ module easy {
 
         /**
          * 释放所有clz归属的objec的引用
+         * 获取class的名称作为对象映射的key,把对应的对象列表引用释放
          * @param clz 要释放的objec的Class
          */
         public static dispose(clz:any):void {
@@ -129,6 +134,7 @@ module easy {
 
         /**
          * 释放某个对象池的所有对象
+         * 获取name对应的对象列表, 把引用释放
          * @param name
          */
         public static disposeObjects(name:string):void {

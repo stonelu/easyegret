@@ -25,7 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 module easy {
-
+	/**
+	 * 水平放置的容器
+	 */
 	export class HGroup extends BaseGroup{
 		public _gap:number = 2;
 		public _horizontalAlign:string = egret.HorizontalAlign.LEFT;

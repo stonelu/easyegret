@@ -26,21 +26,75 @@
  */
 module easy {
     /**
-     * Created by Administrator on 2014/11/5.
+     * 这里记录全局公用的一些数据和设置
      */
     export class GlobalSetting {
+        /**
+         * 在显示view的时候,按照设计的尺寸显示,不做view宽高的改变,采用egret自带的scale策略
+         */
+        public static DISPLAY_FIX:string = "fix";
+        /**
+         * 在显示view的时候会自动把view页面设置成当前最大显示宽高
+         */
+        public static DISPLAY_FULL:string = "full";
+        /**
+         * 显示模式设置
+         * @type {string}
+         */
+        public static DISPLAY_MODEL:string = GlobalSetting.DISPLAY_FIX;
+        /**
+         * 开发模式开关
+         * 打开开发模式,logger会记录打印信息到debug窗口
+         * @type {boolean}
+         */
         public static DEV_MODEL:Boolean = true;//开发模式
-        public static SYSTEM_DATE:Date = null;//系统时间
-        public static XML_CONFIG:egret.XML = null;//配置文件
-        public static XML_VERSION:egret.XML = null;//版本文件
+        /**
+         * 游戏系统的时间校对
+         * 一般登录完成后,服务器会通知一个当前的服务器时间
+         * 以此时间为基准,客户端可以随时校对自己的时间
+         * @type {number}
+         */
+        public static SYSTEM_DATE:number = 0;
+        /**
+         * 声音总开关
+         * @type {boolean}
+         */
         public static VOLUME_OPEN:boolean = true;//音量开关
+        /**
+         * 帧频设置
+         * @type {number}
+         */
         public static FRAME_RATE:number = 60;//帧频
+        /**
+         * 舞台
+         * @type {null}
+         */
         public static STAGE:egret.Stage = null;//舞台
-        public static IOS:Boolean = false;//是否ios设备
-        public static STAGE_WIDTH:number = 960;//实际舞台宽
-        public static STAGE_HEIGHT:number = 640;//实际舞台高
-
-
+        //public static IOS:Boolean = false;//是否ios设备
+        /**
+         * 舞台的宽
+         * @type {number}
+         */
+        public static STAGE_WIDTH:number = 480;//实际舞台宽
+        /**
+         * 舞台的高
+         * @type {number}
+         */
+        public static STAGE_HEIGHT:number = 800;//实际舞台高
+        /**
+         * 配置文件
+         * 一般会记录http的访问地址,由该地址,获取服务器列表和版本信息
+         * @type {null}
+         */
+        public static XML_CONFIG:egret.XML = null;//配置文件
+        /**
+         * 安装包自带的版本信息
+         * @type {null}
+         */
+        public static XML_VERSION:egret.XML = null;//版本文件
+        /**
+         * 初始化全局的数据
+         */
         public static initData():void{
             GlobalSetting.STAGE = egret.MainContext.instance.stage;
             GlobalSetting.STAGE_WIDTH = GlobalSetting.STAGE.stageWidth;

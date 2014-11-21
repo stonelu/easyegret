@@ -25,6 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 module easy {
+    /**
+     * 按钮
+     */
 	export class Button extends Group {
         public static TOGGLE_PREFIX:string = "ui#button#toggle_";//toggle事件的前缀,尽量避免受到其他事件名称的混淆
 
@@ -434,8 +437,8 @@ module easy {
             //if (this._data)console.log("button data=" + this._data.id + ", selected=" + this._selected);
             if (this._selected) {
                 var myevent:MyEvent = MyEvent.getEvent(Button.TOGGLE_PREFIX + this._toggleGroup);
-                myevent.setItem("caller", this);
-                myevent.setItem("group", this._toggleGroup);
+                myevent.addItem("caller", this);
+                myevent.addItem("group", this._toggleGroup);
                 myevent.send();
             }
             this.invalidate();

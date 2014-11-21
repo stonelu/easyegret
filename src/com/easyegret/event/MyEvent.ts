@@ -42,23 +42,35 @@ module easy {
          *  <p>添加单个对象到结果集中</p>
          *  @param value 要添加的对象
          */
-        public setItem(proprty:string, value:any):void {
-            this.datas[proprty] = value;
+
+        public addItem(property:string, value:any):void {
+            this.datas[property] = value;
         }
 
-        public addItem(proprty:string, value:any):void {
-            this.setItem(proprty, value);
-        }
-
-        public getItem(proprty:string):any {
-            if (this.datas.hasOwnProperty(proprty)) return this.datas[proprty];
+        /**
+         * 获取property对应的内容
+         * @param property
+         * @returns {null}
+         */
+        public getItem(property:string):any {
+            if (this.datas.hasOwnProperty(property)){
+                return this.datas[property];
+            }
             return null;
         }
 
-        public hasItem(proprty:string):any {
-            return this.datas.hasOwnProperty(proprty);
+        /**
+         * 查询是否携带了proprty名称的数据
+         * @param property
+         * @returns {boolean}
+         */
+        public hasItem(property:string):any {
+            return this.datas.hasOwnProperty(property);
         }
 
+        /**
+         * 回收对象到对象池中
+         */
         public release():void {
             this.callStack = null;
             for (var item in this.datas) {
@@ -66,16 +78,40 @@ module easy {
             }
         }
 
+        /**
+         * 删除property名称的数据
+         * @param proprty
+         */
+        public removeItem(property:string):boolean {
+            if (this.datas.hasOwnProperty(property)){
+                delete this.datas[property];
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * 派发event对象
+         */
         public send():void {
-            easy.EventManager.dispatchEvent(this);
+            EventManager.dispatchEvent(this);
         }
 
+        /**
+         * 从对象池中获取一个type类型的event对象
+         * @param type
+         * @returns {MyEvent}
+         */
         public static getEvent(type:string):MyEvent {
-            return easy.EventManager.getEvent(type);
+            return EventManager.getEvent(type);
         }
 
+        /**
+         * 快捷发送一个type类型的event事件
+         * @param type
+         */
         public static sendEvent(type:string):void {
-            easy.EventManager.dispatch(type);
+            EventManager.dispatch(type);
         }
     }
 }

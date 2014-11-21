@@ -26,9 +26,7 @@
  */
 module easy {
     /**
-     * view的基本类
-     * 所有的ui组件都应该放置在ui层中
-     * 在view中只处理view相关的逻辑,对ui成层的组件进行操作
+     * Debug信息显示窗口
      */
     export class DebugWin extends Win {
         //操作按钮容器

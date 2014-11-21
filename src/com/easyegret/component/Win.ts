@@ -3,13 +3,13 @@
  */
 module easy{
     /**
-     * view的基本类
+     * win的基本类
      * 所有的ui组件都应该放置在ui层中
-     * 在view中只处理view相关的逻辑,对ui成层的组件进行操作
+     * 在win中只处理view相关的逻辑,对ui成层的组件进行操作
      */
     export class Win extends ReceiveGroup {
         /**
-         * view成对应的ui展现
+         * win成对应的ui展现
          * @type {null}
          * @private
          */

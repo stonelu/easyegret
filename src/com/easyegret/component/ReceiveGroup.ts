@@ -26,9 +26,8 @@
  */
 module easy{
     /**
-     * view的基本类
-     * 所有的ui组件都应该放置在ui层中
-     * 在view中只处理view相关的逻辑,对ui成层的组件进行操作
+     * view和win的基本类
+     * 定义了接收协议packet和event的能力,方便在已经展示的时候,通过packet和event的事件进行驱动刷新显示
      */
     export class ReceiveGroup extends Group {
         /**

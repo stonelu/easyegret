@@ -26,7 +26,8 @@
  */
 module easy {
     /**
-     * Created by Administrator on 2014/11/5.
+     * logger日志记录
+     * 主要是输出到debugwin窗口中,一边debug信息查看
      */
     export class Logger {
         /**
