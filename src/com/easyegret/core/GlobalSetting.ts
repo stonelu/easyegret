@@ -32,16 +32,16 @@ module easy {
         /**
          * 在显示view的时候,按照设计的尺寸显示,不做view宽高的改变,采用egret自带的scale策略
          */
-        public static DISPLAY_FIX:string = "fix";
+        public static DISPLAY_VIEW_FIX:string = "fix";
         /**
          * 在显示view的时候会自动把view页面设置成当前最大显示宽高
          */
-        public static DISPLAY_FULL:string = "full";
+        public static DISPLAY_VIEW_FULL:string = "full";
         /**
          * 显示模式设置
          * @type {string}
          */
-        public static DISPLAY_MODEL:string = GlobalSetting.DISPLAY_FIX;
+        public static DISPLAY_MODEL:string = GlobalSetting.DISPLAY_VIEW_FIX;
         /**
          * 开发模式开关
          * 打开开发模式,logger会记录打印信息到debug窗口
@@ -100,8 +100,8 @@ module easy {
             GlobalSetting.STAGE_WIDTH = GlobalSetting.STAGE.stageWidth;
             GlobalSetting.STAGE_HEIGHT = GlobalSetting.STAGE.stageHeight;
             if (GlobalSetting.DEV_MODEL) {
-                Logger.log = "---- GlobalSetting init!----";
-                Logger.log = "STAGE_WIDTH=" + GlobalSetting.STAGE_WIDTH + ", STAGE_HEIGHT=" + GlobalSetting.STAGE_HEIGHT;
+                Debug.log = "---- GlobalSetting init!----";
+                Debug.log = "STAGE_WIDTH=" + GlobalSetting.STAGE_WIDTH + ", STAGE_HEIGHT=" + GlobalSetting.STAGE_HEIGHT;
             }
         }
 

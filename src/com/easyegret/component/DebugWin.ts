@@ -111,7 +111,7 @@ module easy {
          * @param event
          */
         private onTouchRegresh(event:egret.TouchEvent):void {
-            this._textInfo.text = Logger.log;
+            this._textInfo.text = Debug.log;
         }
         /**
          * 关闭窗口事件

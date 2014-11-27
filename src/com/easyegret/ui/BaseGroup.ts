@@ -40,9 +40,9 @@ module easy {
 		private _bottomEnabled:boolean = false;
 		private _right:number = 0;
 		private _rightEnabled:boolean = false;
-		private _horizontalLayout:boolean = false;
+		private _horizontalEnabled:boolean = false;
 		private _horizontalCenter:number = 0;
-		private _verticalLayout:boolean = false;
+		private _verticalEnabled:boolean = false;
 		private _verticalCenter:number = 0;
 		public _data:any;//可携带的数据
 		private _enabled:boolean = true;//不可用状态
@@ -86,11 +86,13 @@ module easy {
 		}
         public get width():number {
 			//console.log("@@@BaseGroup =" + this._explicitWidth);
+			if (this._explicitWidth == NaN) return 0;
             return this._explicitWidth;
-        }
+		}
 
-        public get height():number {
-            return this._explicitHeight;
+		public get height():number {
+			if (this._explicitHeight == NaN) return 0;
+			return this._explicitHeight;
         }
 
         /**
@@ -219,14 +221,14 @@ module easy {
 			this._rightEnabled = value;
 			this.invalidatePosition();
 		}
-		public get horizontalLayout():boolean{
-			return this._horizontalLayout;
+		public get horizontalEnabled():boolean{
+			return this._horizontalEnabled;
 		}
 		/**
 		 * 设置水平居中可用
 		 */
-		public set horizontalLayout(value:boolean){
-			this._horizontalLayout = value;
+		public set horizontalEnabled(value:boolean){
+			this._horizontalEnabled = value;
 			this.invalidatePosition();
 		}
 
@@ -243,15 +245,15 @@ module easy {
 			}
 		}
 
-		public get verticalLayout():boolean{
-			return this._verticalLayout;
+		public get verticalEnabled():boolean{
+			return this._verticalEnabled;
 		}
 		/**
 		 * 设置竖直居中可用 
 		 */
-		public set verticalLayout(value:boolean){
-			if (this._verticalLayout != value){
-				this._verticalLayout = value;
+		public set verticalEnabled(value:boolean){
+			if (this._verticalEnabled != value){
+				this._verticalEnabled = value;
 				this.invalidatePosition();
 			}
 		}
@@ -277,26 +279,24 @@ module easy {
 				if(this._topEnabled && !this._bottomEnabled){
 					this.y = this._top;
 				}else if(this._bottomEnabled && !this._topEnabled){
-					this.y = p.height - this._bottom - this.height;
+					this.y = p._explicitHeight - this._bottom - this._explicitHeight;
 				}else if(this._topEnabled && this._bottomEnabled){
-					//TODO
-//					this.y = _top;
-//					this.height = p.height - _top - _bottom;
+					this.y = this._top;
+					this._explicitHeight = p._explicitHeight - this._top - this._bottom;
 				}
 				if(this._leftEnabled && !this._rightEnabled){
 					this.x = this._left;
 				}else if(this._rightEnabled && !this._leftEnabled){
-					this.x = p.width - this._right - this.width;
+					this.x = p._explicitWidth - this._right - this._explicitWidth;
 				}else if(this._leftEnabled && this._rightEnabled){
-					//TODO
-//					this.x = _left;
-//					this.width = p.width - left - right;
+					this.x = this._left;
+					this._explicitWidth = p._explicitWidth - this._left - this._right;
 				}
-				if(this._horizontalLayout){
-					this.x = (p.width - this.width)/2 + this._horizontalCenter;
+				if(this._horizontalEnabled){
+					this.x = (p._explicitWidth - this._explicitWidth)/2 + this._horizontalCenter;
 				}
-				if(this._verticalLayout){
-					this.y = (p.height - this.height)/2 + this._verticalCenter;
+				if(this._verticalEnabled){
+					this.y = (p._explicitHeight - this._explicitHeight)/2 + this._verticalCenter;
 				}
 			}
 		}
@@ -311,6 +311,14 @@ module easy {
         public setData(value:any) {
             this._data = value;
         }
+
+		public get data():any {
+			return this._data;
+		}
+
+		public set data(value:any) {
+			this._data = value;
+		}
         
         /**
          * 清理数据
@@ -341,14 +349,16 @@ module easy {
 		 * @returns {number}
 		 */
 		public get cx():number {
-			return this.width/2;
+			if (this._explicitWidth == NaN) return 0
+			return this._explicitWidth/2;
 		}
 		/**
 		 * 中心y位置
 		 * @returns {number}
 		 */
 		public get cy():number {
-			return this.height/2;
+			if (this._explicitHeight == NaN) return 0
+			return this._explicitHeight/2;
 		}
 		/**
 		 * 从场景中移除改对象

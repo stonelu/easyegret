@@ -31,18 +31,48 @@ module easy{
      */
     export class ReceiveGroup extends Group {
         /**
-         * 对应的ui展现
-         * @type {null}
-         * @private
+         * 消息和方法的映射关系表
          */
-        private _ui:egret.DisplayObject = null;
+        private METHOD_DEF:Object = {};
         /**
-         * view成对应的ui展现
-         * @type {null}
-         * @private
+         * 对应的ui展现
          */
+        public _ui:egret.DisplayObject = null;
+
         public constructor() {
             super();
+            this.initWeekListener();
+        }
+        /**
+         * 初始化弱监听方法,以便分发协议数据包用
+         * 不在监听列表的数据包,将被自动过滤掉
+         */
+        public initWeekListener():void {
+        }
+        /**
+         * 添加事件的处理
+         * 如果没有对应的的类型在此出现,则改Handle对Event事件到此为止,不再派发,防止造成事件死循环
+         * @param type MyEvent事件的类型
+         * @param func  对应的call back function,不包含onEvent前缀
+         */
+        public addHandleEvent(type:string, funcName:string):void {
+            this.METHOD_DEF[type] = funcName;
+        }
+
+        /**
+         * 添加协议处理的Handle,注意,functName的名称,前缀onPacket不包含
+         * @param msgId packet协议号
+         * @param func  对应的call back function,不包含onPacket前缀
+         */
+        public addHandlePacket(msgId:number, funcName:string):void {
+            this.METHOD_DEF["" + msgId] = funcName;
+        }
+
+        public receivePacket(packet:Packet):void {
+            if (this.METHOD_DEF.hasOwnProperty("" + packet.header.messageId))this["onPacket" + this.METHOD_DEF[packet.header.messageId]].call(this, packet);
+        }
+        public receiveEvent(event:MyEvent):void {
+            if (this.METHOD_DEF.hasOwnProperty(event.type)) this["onEvent" + this.METHOD_DEF[event.type]].call(this, event);
         }
         /**
          * 进入的逻辑

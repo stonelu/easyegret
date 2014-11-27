@@ -67,5 +67,31 @@ module easy{
                 viewInstance.enter();
             }
         }
+
+        /**
+         * 把当前接收到的协议转发到当前显示的view,以便view做刷新
+         * @param packet
+         */
+        public static receivePacket(packet:Packet):void {
+            //view层派发
+            ViewManager.currentView.receivePacket(packet);
+            //弹出窗口派发
+            for (var i = 0; i < PopupManager.CURRENT_SHOW.length; i++){//win界面派发
+                PopupManager.CURRENT_SHOW[i].receivePacket(packet);
+            }
+        }
+
+        /**
+         * 把当前接收到的event事件转发到当前显示的view,以便view做刷新
+         * @param event
+         */
+        public static receiveEvent(event:MyEvent):void {
+            //view层派发
+            ViewManager.currentView.receiveEvent(event);
+            //弹出窗口派发
+            for (var i = 0; i < PopupManager.CURRENT_SHOW.length; i++){//win界面派发
+                PopupManager.CURRENT_SHOW[i].receiveEvent(event);
+            }
+        }
     }
 }

@@ -33,6 +33,8 @@ module easy{
     export class PopupManager {
         private static _instanceDict:Object = {};//win对象的缓存字典
 
+        public static CURRENT_SHOW:Array<Win> = [];//当前显示的窗口
+
         private static _mask:egret.Shape = null;//遮罩
 
         /**
@@ -63,6 +65,7 @@ module easy{
                 winInstance.x = ViewManager.currentView.cx - winInstance.cx;
                 winInstance.y = ViewManager.currentView.cy - winInstance.cy;
                 winInstance.enter();
+                PopupManager.CURRENT_SHOW.push(winInstance);
                 return winInstance;
             }
             return null;
@@ -81,6 +84,7 @@ module easy{
             if (winInstance){
                 winInstance.outer();
                 winInstance.removeFromParent();
+                PopupManager.CURRENT_SHOW.splice(PopupManager.CURRENT_SHOW.indexOf(winInstance), 1);
             }
             if (PopupManager._mask && PopupManager._mask.parent) PopupManager._mask.parent.removeChild(PopupManager._mask);
         }

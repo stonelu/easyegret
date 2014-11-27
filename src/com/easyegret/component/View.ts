@@ -17,7 +17,33 @@ module easy{
          * 可以再次根据外部数据情况做一些逻辑处理
          */
         public enter():void {
-
+            super.enter();
+            this.checkViewSize();
+        }
+        /**
+         * 设置ui层的显示对象
+         * @param myui
+         */
+        public setUI(myui:egret.DisplayObject) {
+            super.setUI(myui);
+            this._ui = myui;
+            if (this._ui) {
+                this.addChild(this._ui);
+            }
+            this.showDefaultSkin = false;
+        }
+        /**
+         * 检测view的尺寸要求是否达到设定
+         */
+        public checkViewSize():void {
+            if (GlobalSetting.DISPLAY_MODEL == GlobalSetting.DISPLAY_VIEW_FULL){
+                this.setSize(GlobalSetting.STAGE_WIDTH, GlobalSetting.STAGE_HEIGHT);
+                var ui:BaseGroup = this.getUI();
+                if (ui){
+                    ui.setSize(this.width, this.height);
+                    console.log("view checkViewSize widht=" + ui.width + ", height=" + ui.height)
+                }
+            }
         }
 
         /**
@@ -25,7 +51,7 @@ module easy{
          * 做一些数据的销毁或者初始化,保证下次进入的时候,不会残留
          */
         public outer():void {
-
+            super.outer();
         }
 
     }

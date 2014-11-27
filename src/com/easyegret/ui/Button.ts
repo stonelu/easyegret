@@ -73,6 +73,11 @@ module easy {
         //label字体
         private _fontName:string = null;
 
+        /**
+         * 适合材质的尺寸
+         */
+        private _fixTextureSize:boolean = true;
+
         public constructor() {
             super();
         }
@@ -258,6 +263,10 @@ module easy {
             }
             if (this._imgDisplay == null) return;
             this._imgDisplay.texture = this._textureDict[this._currentState];
+            if (this._fixTextureSize && this._imgDisplay.texture){
+                this.width = this._imgDisplay.texture._sourceWidth;
+                this.height = this._imgDisplay.texture._sourceHeight;
+            }
             this._imgDisplay.width = this.width;
             this._imgDisplay.height = this.height;
             if (this.scale9GridEnable && this.scale9GridRect != null){//九宫拉伸设置
@@ -578,6 +587,22 @@ module easy {
 		}
 		public get iconMarginLeft():number{
 			return this._iconMarginLeft;
+		}
+
+        /**
+         * 设置按钮是否按照材质的宽高设置
+         * true:按照切割后的材质,设置按钮的宽和高
+         * false:根据按钮本身的宽和高设置材质的宽高
+         * @param value
+         */
+		public set fixTextureSize(value:boolean){
+            if (this._fixTextureSize != value) {
+    			this._fixTextureSize = value;
+    			this.invalidate();
+            }
+		}
+		public get fixTextureSize():boolean{
+			return this.fixTextureSize;
 		}
 
         public set toggleGroup(value:string){

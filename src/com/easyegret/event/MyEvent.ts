@@ -71,7 +71,7 @@ module easy {
         /**
          * 回收对象到对象池中
          */
-        public release():void {
+        public destory():void {
             this.callStack = null;
             for (var item in this.datas) {
                 delete this.datas[item];
