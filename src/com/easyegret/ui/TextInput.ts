@@ -28,7 +28,7 @@ module easy {
 
 	export class TextInput extends Group{
 		public _textField:egret.TextField = null;
-		public _text:string = "aaa";
+		public _text:string = "";
 		public _password:boolean = false;
 		private _fontName:string = Style.fontName;//字体
 		private _fontSize:number = Style.fontSize;//字体大小
