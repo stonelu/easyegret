@@ -45,6 +45,10 @@ module easy{
                 ViewManager.mainContainer.x = GlobalSetting.STAGE_WIDTH/2;
                 ViewManager.mainContainer.y = GlobalSetting.STAGE_HEIGHT/2;
             }
+            if (ViewManager.currentView){
+                ViewManager.currentView.outer();
+                ViewManager.currentView.removeFromParent();
+            }
             var key:string = egret.getQualifiedClassName(clz);
             //console.log("View change clz=" + key);
             var viewInstance:View = null;

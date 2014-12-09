@@ -84,12 +84,21 @@ module easy {
 		private onInvalidatePosition():void {
 			this.resetPosition();//重新计算布局位置
 		}
+		public set width(w:number){
+			if(w > 0){
+				this._setWidth(w);
+			}
+		}
         public get width():number {
 			//console.log("@@@BaseGroup =" + this._explicitWidth);
 			if (this._explicitWidth == NaN) return 0;
             return this._explicitWidth;
 		}
-
+		public set height(h:number){
+			if(h > 0){
+				this._setHeight(h);
+			}
+		}
 		public get height():number {
 			if (this._explicitHeight == NaN) return 0;
 			return this._explicitHeight;
@@ -276,27 +285,69 @@ module easy {
 		public resetPosition():void{
 			var p:egret.DisplayObject = this.parent;
 			if(p != null){
+				var parentWidth:number = p.width;
+				var parentHeight:number = p.height;
+				var thisWidth:number = this.width;
+				var thisHeight:number = this.height;
+				//为了保证得到的宽高是数值型,这里进行了严格的检测
+				if (parentWidth == NaN || parentWidth == undefined){
+					parentWidth = p._explicitWidth;
+					if (parentWidth == NaN || parentWidth == undefined){
+						parentWidth = p.measuredWidth;
+					}
+					if (parentWidth == NaN || parentWidth == undefined){
+						parentWidth = 0;
+					}
+				}
+				if (parentHeight == NaN || parentHeight == undefined){
+					parentHeight = p._explicitHeight;
+					if (parentHeight == NaN || parentHeight == undefined){
+						parentHeight = p.measuredHeight;
+					}
+					if (parentHeight == NaN || parentHeight == undefined){
+						parentHeight = 0;
+					}
+				}
+				if (thisWidth == NaN || thisWidth == undefined){
+					thisWidth = this._explicitWidth;
+					if (thisWidth == NaN || thisWidth == undefined){
+						thisWidth = this.measuredWidth;
+					}
+					if (thisWidth == NaN || thisWidth == undefined){
+						thisWidth = 0;
+					}
+				}
+				if (thisHeight == NaN || thisHeight == undefined){
+					thisHeight = this._explicitHeight;
+					if (thisHeight == NaN || thisHeight == undefined){
+						thisHeight = this.measuredHeight;
+					}
+					if (thisHeight == NaN || thisHeight == undefined){
+						thisWidth = 0;
+					}
+				}
+
 				if(this._topEnabled && !this._bottomEnabled){
 					this.y = this._top;
 				}else if(this._bottomEnabled && !this._topEnabled){
-					this.y = p._explicitHeight - this._bottom - this._explicitHeight;
+					this.y = parentHeight - this._bottom - thisHeight;
 				}else if(this._topEnabled && this._bottomEnabled){
 					this.y = this._top;
-					this._explicitHeight = p._explicitHeight - this._top - this._bottom;
+					thisHeight = parentHeight - this._top - this._bottom;
 				}
 				if(this._leftEnabled && !this._rightEnabled){
 					this.x = this._left;
 				}else if(this._rightEnabled && !this._leftEnabled){
-					this.x = p._explicitWidth - this._right - this._explicitWidth;
+					this.x = parentWidth - this._right - thisWidth;
 				}else if(this._leftEnabled && this._rightEnabled){
 					this.x = this._left;
-					this._explicitWidth = p._explicitWidth - this._left - this._right;
+					thisWidth = parentWidth - this._left - this._right;
 				}
 				if(this._horizontalEnabled){
-					this.x = (p._explicitWidth - this._explicitWidth)/2 + this._horizontalCenter;
+					this.x = (parentWidth - thisWidth)/2 + this._horizontalCenter;
 				}
 				if(this._verticalEnabled){
-					this.y = (p._explicitHeight - this._explicitHeight)/2 + this._verticalCenter;
+					this.y = (parentHeight - thisHeight)/2 + this._verticalCenter;
 				}
 			}
 		}
@@ -329,8 +380,14 @@ module easy {
 		public set x(value:number){
 			super._setX(value);
 		}
+		public get x():number {
+			return this._x;
+		}
 		public set y(value:number){
 			super._setY(value);
+		}
+		public get y():number{
+			return this._y;
 		}
         /**
         * 设置enabled状态
@@ -390,6 +447,26 @@ module easy {
 		 */
 		public getActualHeight():number{
 			return this.height * this.scaleX;
+		}
+		
+		/**
+		 * 获取注册点相对的偏移像素值
+		 * 官方很奇葩,修改了注册点后,子组件竟然不是以改注册点的值作为起始xy的0值
+		 * 这里计算出实际的偏移值,供大家使用
+		 */
+		public getRegPoint():egret.Point{
+			var regPoint:egret.Point = new egret.Point();
+			if (this._anchorX != 0){
+				regPoint.x = this.width*this._anchorX;
+			} else if (this._anchorOffsetX != 0) {
+				regPoint.x = this._anchorOffsetX;
+			}
+			if (this._anchorY != 0){
+				regPoint.y = this.height*this._anchorY;
+			} else if (this._anchorOffsetX != 0) {
+				regPoint.y = this._anchorOffsetY;
+			}
+			return regPoint;
 		}
     }
 }

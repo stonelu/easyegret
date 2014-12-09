@@ -75,6 +75,15 @@ module easy{
             if (this.METHOD_DEF.hasOwnProperty(event.type)) this["onEvent" + this.METHOD_DEF[event.type]].call(this, event);
         }
         /**
+         * 初始化主场景的组件
+         * 这个方法在对象new的时候就调用,因为有些ui必须在加入stage之前就准备好
+         * 子类覆写该方法,添加UI逻辑
+         */
+        public createChildren():void {
+            super.createChildren();
+            this.touchEnabled = true;//默认不接受事件
+        }
+        /**
          * 进入的逻辑
          * 可以再次根据外部数据情况做一些逻辑处理
          */

@@ -176,13 +176,13 @@ module easy {
 			var child:egret.DisplayObject = null;
 			var childLast:egret.DisplayObject = null;
 			var wElements:number = 0;
-			console.log("@@@@@HGroup numChildren=" + this.numChildren);
+			//console.log("@@@@@HGroup numChildren=" + this.numChildren);
 			for(i = 0; i < this.numChildren; i++){
 				wElements += this.getChildAt(i)._explicitWidth;
 			}
-			console.log("@@@@@HGroup 000 wElements=" + wElements + ", gap=" + this._gap);
+			//console.log("@@@@@HGroup 000 wElements=" + wElements + ", gap=" + this._gap);
 			wElements += (this.numChildren - 1) * this._gap;
-			console.log("@@@@@HGroup 1111 wElements=" + wElements + ", gap=" + this._gap);
+			//console.log("@@@@@HGroup 1111 wElements=" + wElements + ", gap=" + this._gap);
 			for(i = 0; i < this.numChildren; i++){
 				child = this.getChildAt(i);
 				if(i == 0){
@@ -204,7 +204,7 @@ module easy {
 				}else if(this._verticalAlign == egret.VerticalAlign.BOTTOM){
 					child.y = this._explicitHeight - child.height;
 				}
-				console.log("@@@@@HGroup x=" + child.x + ", y=" + child.y);
+				//console.log("@@@@@HGroup x=" + child.x + ", y=" + child.y);
 			}
 		}
 	}

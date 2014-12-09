@@ -301,5 +301,33 @@ module easy {
 				this.invalidate();
 			}
 		}
+				/**
+		 * 水平对齐设置
+		 * 默认egret.HorizontalAlign.LEFT;
+		 */
+		public get hAlign():string{
+			return this._hAlign;
+		}
+
+		public set hAlign(value:string){
+			if(this._hAlign != value){
+				this._hAlign = value;
+				this.invalidate();
+			}
+		}
+		/**
+		 * 竖直对齐设置
+		 * 默认egret.VerticalAlign.MIDDLE;
+		 */
+		public get vAlign():string{
+			return this._vAlign;
+		}
+
+		public set vAlign(value:string){
+			if(this._vAlign != value){
+				this._vAlign = value;
+				this.invalidate();
+			}
+		}
     }
 }

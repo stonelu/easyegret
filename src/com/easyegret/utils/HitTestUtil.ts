@@ -39,10 +39,51 @@ module easy {
         private static _shape:egret.Shape = null;
 
         public static testHit(obj1:egret.DisplayObject, obj2:egret.DisplayObject):boolean {
-            //对象1的数据准备
+            //console.log("p1=" + obj1.parent + ", p2=" + obj2.parent)
+            if (!obj1.parent || !obj2.parent) {
+                return false;
+            }
+            var x:number = obj1.x;
+            var y:number = obj1.y ;
             var b1Rect:egret.Rectangle = obj1.getBounds();
+            //对象1的数据准备
+            if (obj1.anchorX != 0){
+                x -= b1Rect.width * obj1.anchorX;
+            }
+            if (obj1.anchorY != 0){
+                y -= b1Rect.height * obj1.anchorY;
+            }
+            var tempPoint:egret.Point = new egret.Point();
+            obj1.parent.localToGlobal(x, y, tempPoint);
+            b1Rect.x = tempPoint.x;
+            b1Rect.y = tempPoint.y;
+            //console.log("x1=" + x + ", x2=" + tempPoint.x + ", y1=" + y + ", y2=" + tempPoint.y + ", w="+ b1Rect.width + ", h=" + b1Rect.height);
             //对象2的数据准备
+            x = obj2._x;
+            y = obj2._y ;
+            //对象1的数据准备
             var b2Rect:egret.Rectangle = obj2.getBounds();
+            if (obj2.anchorX != 0){
+                x -= b2Rect.width * obj2.anchorX;
+            }
+            if (obj2.anchorY != 0){
+                y -= b2Rect.height * obj2.anchorY;
+            }
+            obj2.parent.localToGlobal(x, y, tempPoint);
+            b2Rect.x = tempPoint.x;
+            b2Rect.y = tempPoint.y;
+            //console.log("x1=" + x + ", x2=" + tempPoint.x + ", y1=" + y + ", y2=" + tempPoint.y + ", w="+ b2Rect.width + ", h=" + b2Rect.height);
+
+            //if (HitTestUtil._shape == null) {
+            //    HitTestUtil._shape = new egret.Shape();
+            //}
+            //GlobalSetting.STAGE.addChild(HitTestUtil._shape);
+            //HitTestUtil._shape.graphics.clear();
+            //HitTestUtil._shape.graphics.lineStyle(1, 0xff0f0f);
+            //HitTestUtil._shape.graphics.drawRect(b1Rect.x, b1Rect.y , b1Rect.width, b1Rect.height);
+            //HitTestUtil._shape.graphics.lineStyle(1, 0xff0f0f);
+            //HitTestUtil._shape.graphics.drawRect(b2Rect.x, b2Rect.y , b2Rect.width, b2Rect.height);
+            //HitTestUtil._shape.graphics.endFill();
 
             if (HitTestUtil.testHitRect(b1Rect, b2Rect)){//矩形相交
                 //计算出相交部分的矩形

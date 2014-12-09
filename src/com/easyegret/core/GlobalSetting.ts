@@ -82,6 +82,16 @@ module easy {
          */
         public static STAGE_HEIGHT:number = 800;//实际舞台高
         /**
+         * 最小view的宽
+         * @type {number}
+         */
+        public static VIEW_MINI_WIDTH:number = 300;//最小view宽
+        /**
+         * 最小view的高
+         * @type {number}
+         */
+        public static VIEW_MINI_HEIGHT:number = 300;//最小view高
+        /**
          * 配置文件
          * 一般会记录http的访问地址,由该地址,获取服务器列表和版本信息
          * @type {null}
@@ -117,7 +127,22 @@ module easy {
             } else {
                 return false;
             }
-
+            //var bet = 1;//iphone系列比较特殊，尺寸需要翻倍
+            //switch (wid) {
+            //    case 320://iphone4\5
+            //        bet = 2;
+            //        break;
+            //    case 375://iphone 6
+            //        bet = 2;
+            //        break;
+            //    case 414://iphone 6+
+            //        bet = 3;
+            //        break;
+            //    default:
+            //        bet = 1;
+            //        break;
+            //}
+            //wid *= bet; hei *= bet;
         }
     }
 }

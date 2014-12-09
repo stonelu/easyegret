@@ -104,6 +104,7 @@ module easy {
             this._label = new Label();
             this._label.width = this.width;
             this._label.height = this.height;
+            this._label.hAlign = egret.HorizontalAlign.CENTER;
             this._label.showDefaultSkin = false;
 			this.addChild(this._label);
 
@@ -264,8 +265,8 @@ module easy {
             if (this._imgDisplay == null) return;
             this._imgDisplay.texture = this._textureDict[this._currentState];
             if (this._fixTextureSize && this._imgDisplay.texture){
-                this.width = this._imgDisplay.texture._sourceWidth;
-                this.height = this._imgDisplay.texture._sourceHeight;
+                this.width = this._imgDisplay.width;
+                this.height = this._imgDisplay.height;
             }
             this._imgDisplay.width = this.width;
             this._imgDisplay.height = this.height;

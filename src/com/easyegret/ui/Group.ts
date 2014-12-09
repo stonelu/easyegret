@@ -161,7 +161,7 @@ module easy {
 		 * 更新显示组件的各项属性,重新绘制显示
 		 */
 		public draw():void{
-			//console.log("Group draw");
+			console.log("Group draw");
 			if (this.width == 0 || this.height == 0) return;
 			//console.log("Group draw this._clip=" + this._clip);
 			if(this._clip){//剪裁
