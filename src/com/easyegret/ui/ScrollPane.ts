@@ -59,7 +59,7 @@ module easy {
             super.createChildren();
         }
         public set showDefaultSkin(value:boolean){
-            super.showDefaultSkin = value;
+            super.showBg = value;
         }
         /**
          * Draws the visual ui of the component.

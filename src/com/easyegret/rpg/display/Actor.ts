@@ -61,8 +61,8 @@ module easy.rpg {
             this.frontGroup = new easy.BaseGroup();
 
             this._bitmapActor = new egret.Bitmap();
-            this._bitmapActor.anchorX = 0.5;
-            this._bitmapActor.anchorY = 0.5;
+            //this._bitmapActor.anchorX = 0.5;
+            //this._bitmapActor.anchorY = 0.5;
 
             //this.addChild(this.backGroup);
             this.addChild(this._bitmapActor);
@@ -74,14 +74,14 @@ module easy.rpg {
             this._hitShape = new egret.Shape();
             this._dotShape = new egret.Shape();
 
-            this.addChild(this._hitShape);
-            this.addChild(this._dotShape);
+            //this.addChild(this._hitShape);
+            //this.addChild(this._dotShape);
+            this.showBg = false;
 
             this.hitRect.width = 20;
             this.hitRect.height = 80;
             this.setSize(100, 100);
 
-            this.showDefaultSkin = true;
         }
 
         public draw():void {

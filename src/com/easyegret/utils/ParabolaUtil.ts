@@ -48,7 +48,7 @@ module easy {
          * @param end   结束点
          * @param waveHeight 定点高
          */
-        public inti(start:egret.Point, end:egret.Point, waveHeight:number = 240):void {
+        public init(start:egret.Point, end:egret.Point, waveHeight:number = 240):void {
             this.startPt = start;
             this.endPt = end;
             this.vertexPt = new egret.Point(this.startPt.x + (this.endPt.x - this.startPt.x) / 2, this.endPt.y - waveHeight);

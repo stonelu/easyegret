@@ -51,6 +51,7 @@ module easy {
 		public createChildren():void{
 			super.createChildren();
 			this.setSize(Style.TEXTINPUT_WIDTH, Style.TEXTINPUT_HEIGHT);
+			this.bgColor = Style.INPUT_TEXT;
 			this.touchEnabled = true;
 			this._textField = new egret.TextField();
 			this._textField.height = this.height;
@@ -66,13 +67,13 @@ module easy {
 		 */
 		public onChangeHdl(event:egret.Event):void{
 			this._text = this._textField.text;
-			console.log("TextInput Change text=" + this._text);
+			//console.log("TextInput Change text=" + this._text);
 			this.invalidate();
 		}
 		/**
 		 * 返回文字输入对象
 		 */
-		public get textField():egret.TextField{
+		public getTextField():egret.TextField{
 			return this._textField;
 		}
 		/**

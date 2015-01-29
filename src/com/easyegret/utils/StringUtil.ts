@@ -44,14 +44,14 @@ module easy {
         }
         //是否有效
         public static isUsage(value:string):boolean {
-            if (value == null || StringUtil.trim(value) == "") {
+            if (value == undefined || value == null || StringUtil.trim(value) == "" ) {
                 return false;
             }
             return true;
         }
         //去收尾空格
         public static trim(str:string):string{
-            if(str==null){
+            if(str == undefined || str == null){
                 return null;
             }
             return str.trim()
@@ -247,6 +247,53 @@ module easy {
                 }
             }
             return result;
+        }
+
+        public static isPhone(str:string):boolean {
+            //var regu ="/(^\([1-9]{3}\)[1-9]{3}(-\d{4})?$)" +
+            //    "|(^\([1-9]{3}\)\s[1-9]{3}(-\d{4})?$)" +
+            //    "|(^([1-9]{3}\s\/\s[1-9]{3}(-\d{4}))?$)" +
+            //    "|(^([1-9]{3}-[1-9]{3}(-\d{4}))?$)" +
+            //    "|(^([1-9]{3}\s[1-9]{3}(\s\d{4}))?$)" +
+            //    "|(^\d{10}$)/";
+            //var regu = "^((\(\d{3}\))|(\d{3}\-))?13[0-9]\d{8}|15[89]\d{8}";
+            //var regu = "1[1-9][0-9]{9}";
+            //var re = new RegExp(regu);
+            //if (re.test( str )) {
+            //    //alert(str+"true");
+            //    return true;
+            //}
+            if (StringUtil.isUsage(str) && str.length == 11) {
+                var num:number = parseInt(str);
+                if (("" + num) == str){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * 格式化时间
+         * @param timer
+         * @param formate
+         * @returns {string}
+         */
+        public static formatTime(timer:number, formate:string = "00:00"):string {
+            var str:string = "";
+            var minute:number = Math.floor(timer/60);
+            if (minute < 10) {
+                str = "0" + minute;
+            } else {
+                str = "" + minute;
+            }
+            str += ":";
+            var second:number = Math.floor(timer%60);
+            if (second < 10){
+                str += "0" + second;
+            } else {
+                str += "" + second;
+            }
+            return str;
         }
     }
 }

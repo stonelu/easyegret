@@ -33,20 +33,22 @@ module easy {
 		/**
 		 * 是否显示默认样式 ,
 		 * 默认为true,显示.
-		 */		
-		private _showDefaultSkin:boolean = true;
+		 */
+		public _showBg:boolean = true;
 		/**
 		 * 默认背景的颜色
 		 */
-		private _defaultSkinColor:number = Style.BACKGROUND;
+		private _bgColor:number = Style.BACKGROUND;
 		/**
 		 * 默认背景的显示对象
 		 */
-		private _defaultSkin:egret.Bitmap = null;
-		private _defaultSkinTexture:egret.Texture = null;//背景材质
+		public _bgImage:egret.Bitmap = null;
+		private _bgTexture:egret.Texture = null;//背景材质
 		//默认背景的显示对象九宫拉伸的设定
 		private _scale9GridEnable:boolean = false;//九宫拉伸生效
 		private _scale9GridRect:egret.Rectangle = null;//九宫拉伸的尺寸
+		//private _scaleEnable:Boolean = true;
+		private _fillMode:string = "scale";//scale, repeat.
 		/**
 		 * 默认背景是否带边框
 		 */
@@ -57,7 +59,7 @@ module easy {
 		 * 默认为true,剪切.
 		 */
 		private _clip:boolean = false;
-		private _touchNonePixel:Boolean = false;//没有像素点时是否能触发事件
+		private _touchNonePixel:boolean = false;//没有像素点时是否能触发事件
 
         public constructor() {
             super();
@@ -74,17 +76,29 @@ module easy {
 		/**
 		 * 默认样式色块颜色值. 
 		 */		
-		public get defaultSkinColor():number{
-			return this._defaultSkinColor;
+		public get bgColor():number{
+			return this._bgColor;
 		}
 
-		public set defaultSkinColor(value:number){
-			if(this._defaultSkinColor != value && this._showDefaultSkin){
-    			this._defaultSkinColor = value;
+		public set bgColor(value:number){
+			if(this._bgColor != value && this._showBg){
+    			this._bgColor = value;
 				this.invalidate();				
 			}
 		}
-        
+		/**
+		 * Sets/gets the fillMode of the scale9Grid bitmap.(scale|repeat)
+		 */
+		public get fillMode():string{
+			return this._fillMode;
+		}
+
+		public set fillMode(value:string){
+			if (this._fillMode != value){
+				this._fillMode = value;
+				this.invalidate();
+			}
+		}
         //public set enabled(value:boolean) {
 			//this._enabled = value;
         //    //this.touchEnabled = value;
@@ -94,16 +108,16 @@ module easy {
 		/**
 		 * 设置默认背景是否显示
 		 */
-		public set showDefaultSkin(value:boolean){
-			if(this._showDefaultSkin != value){
-				this._showDefaultSkin = value;
+		public set showBg(value:boolean){
+			if(this._showBg != value){
+				this._showBg = value;
 				//console.log("!!!Group set showDefaultSkin=" + this._showDefaultSkin)
 				this.invalidate();				
 			}
 		}
 		
-		public get showDefaultSkin():boolean{
-			return this._showDefaultSkin;
+		public get showBg():boolean{
+			return this._showBg;
 		}
 
 		/**
@@ -120,21 +134,15 @@ module easy {
 			return this._clip;
 		}
 		///**
-		// * Sets/gets the width of the component.
+		// *  Sets/gets the common scaleEnable of the bitmap.
 		// */
-		//public set width(w:number){
-		//	if(this._width != w){
-		//		this._width = w;
-		//		this.invalidate();
-		//	}
+		//public get scaleEnable():boolean{
+		//	return this._scaleEnable;
 		//}
         //
-		///**
-		// * Sets/gets the height of the component.
-		// */
-		//public set height(h:number){
-		//	if(this._height != h){
-		//		this._height = h;
+		//public set scaleEnable(value:boolean){
+		//	if (this._scaleEnable != value) {
+		//		this._scaleEnable = value;
 		//		this.invalidate();
 		//	}
 		//}
@@ -148,7 +156,7 @@ module easy {
 		/**
 		 * 重绘通知
 		 */
-		public onInvalidate(event:Event):void{
+		public onInvalidate(event:egret.Event):void{
 			this.removeEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
             this._hasInvalidate = false;
 			this.draw();
@@ -161,35 +169,35 @@ module easy {
 		 * 更新显示组件的各项属性,重新绘制显示
 		 */
 		public draw():void{
-			console.log("Group draw");
+			//console.log("Group draw");
 			if (this.width == 0 || this.height == 0) return;
 			//console.log("Group draw this._clip=" + this._clip);
 			if(this._clip){//剪裁
 				if (this.scrollRect == null){
 					this.scrollRect = new egret.Rectangle(0, 0, this.width, this.height);
 				} else {
-					this._scrollRect.width = this.width;
-					this._scrollRect.height = this.height;
+					this.scrollRect.width = this.width;
+					this.scrollRect.height = this.height;
 				}
 			}else{
 				this.scrollRect = null;
 			}
 			//console.log("Group draw this._showDefaultSkin=" + this._showDefaultSkin);
-            if(this._showDefaultSkin || (this._touchNonePixel && this.touchEnabled)){
+            if(this._showBg || (this._touchNonePixel && this.touchEnabled)){
                 this.addDefaultSkin();
-				if(this._defaultSkin){
-					this._defaultSkin.visible = true;
-					if(this._touchNonePixel && !this._showDefaultSkin){//如果设置没有像素点能触发事件 并且没有设置默认样式 则设置alpha=0即可
-						this._defaultSkin.alpha = 0;
+				if(this._bgImage){
+					this._bgImage.visible = true;
+					if(this._touchNonePixel && !this._showBg){//如果设置没有像素点能触发事件 并且没有设置默认样式 则设置alpha=0即可
+						this._bgImage.alpha = 0;
 					}else{
-						this._defaultSkin.alpha = 1;
+						this._bgImage.alpha = 1;
 					}
 				}
             } else {
-                if(this._defaultSkin){
-                    this._defaultSkin.visible = false;
-					if (this._defaultSkin.parent) {
-						this._defaultSkin.parent.removeChild(this._defaultSkin);
+                if(this._bgImage){
+                    this._bgImage.visible = false;
+					if (this._bgImage.parent) {
+						this._bgImage.parent.removeChild(this._bgImage);
 					}
                 }
             }
@@ -200,15 +208,15 @@ module easy {
         private addDefaultSkin():void{
 			//console.log("Group addDefaultSkin this.width=" + this.width + ", this.height=" + this.height)
             if (this.width > 0 && this.height > 0) {
-                if(this._defaultSkin == null){
-                    this._defaultSkin = new egret.Bitmap();
+                if(this._bgImage == null){
+                    this._bgImage = new egret.Bitmap();
 				}
-				if (this._defaultSkinTexture == null){//生成默认材质
-					this._defaultSkin.fillMode = egret.BitmapFillMode.SCALE;//拉伸放大方式铺满
+				if (this._bgTexture == null){//生成默认材质
+					this._bgImage.fillMode = egret.BitmapFillMode.SCALE;//拉伸放大方式铺满
 					var shape:egret.Shape = new egret.Shape();
 					shape.width = this.width;
 					shape.height = this.height;
-					shape.graphics.beginFill(this._defaultSkinColor, 1);
+					shape.graphics.beginFill(this._bgColor, 1);
 					shape.graphics.drawRect(0,0, this.width, this.height);
 					shape.graphics.endFill();
 					if (this._border){
@@ -217,15 +225,21 @@ module easy {
 					}
 					var renderTexture:egret.RenderTexture = new egret.RenderTexture();
 					renderTexture.drawToTexture(shape);
-					this._defaultSkinTexture = renderTexture;
-					this._defaultSkin.texture = this._defaultSkinTexture ;
+					this._bgTexture = renderTexture;
+					this._bgImage.texture = this._bgTexture ;
 				} else{
-					this._defaultSkin.texture = this._defaultSkinTexture ;
+					this._bgImage.texture = this._bgTexture ;
 					//TODO 是否要用背景图撑大整个group?
 				}
-				this._defaultSkin.width = this.width;
-				this._defaultSkin.height = this.height;
-				if (!this._defaultSkin.parent)this.addChildAt(this._defaultSkin, 0);
+			}
+			if (this._bgImage && (this._showBg || (this._touchNonePixel && this.touchEnabled))) {
+				if (!this._bgImage.parent)this.addChildAt(this._bgImage, 0);
+				if (this._scale9GridEnable){
+					this._bgImage.scale9Grid = this._scale9GridRect;
+				}
+				this._bgImage.width = this.width;
+				this._bgImage.height = this.height;
+				this._bgImage.fillMode = this._fillMode;
 			}
         }
 		/**
@@ -249,7 +263,7 @@ module easy {
 		 * @returns {egret.Bitmap}
 		 */
 		public getDefaultSkin():egret.Bitmap {
-			return this._defaultSkin;
+			return this._bgImage;
 		}
 
 		/**
@@ -257,19 +271,19 @@ module easy {
 		 * 会取代自动绘制的背景图
 		 * @param value
 		 */
-		public set defaultSkinTexture(value:egret.Texture){
-			if (this._defaultSkinTexture != value) {
-				this._defaultSkinTexture = value;
+		public set bgTexture(value:egret.Texture){
+			if (this._bgTexture != value) {
+				this._bgTexture = value;
 				this.invalidate();
 			}
 		}
-		public get touchNonePixel():Boolean{
+		public get touchNonePixel():boolean{
 			return this._touchNonePixel;
 		}
 		/**
 		 * 无像素时是否能触发事件
 		 */
-		public set touchNonePixel(value:Boolean){
+		public set touchNonePixel(value:boolean){
 			if(value != this._touchNonePixel){
 				this._touchNonePixel = value;
 				this.invalidate();

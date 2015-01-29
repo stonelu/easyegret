@@ -41,29 +41,14 @@ module easy {
 		private _multiline:boolean = false;//多行显示
         private _html:boolean = false;
         private _stroke:number = 0;
-        private _strokeColor:number = 0;
+        private _strokeColor:number = 0x003350;
 
 		private _autoSize:boolean = false;//根据文字自动调整Label的尺寸
 
 		public _link:Function = null;
-		public _allowLabelFilter:boolean = false;//描边启用
         public constructor() {
             super();
         }
-		/**
-		 * 是否允许设置文本滤镜.
-		 */
-		public get allowLabelFilter():boolean{
-			return this._allowLabelFilter;
-		}
-
-
-		public set allowLabelFilter(value:boolean){
-            if(this._allowLabelFilter != value){
-    			this._allowLabelFilter = value;
-    			//this.refreshFilter();
-            }
-		}
         public initData():void {
             super.initData();
         }
@@ -73,11 +58,10 @@ module easy {
          */  
         public createChildren():void {
 			super.createChildren();
-			if (!this._autoSize)this.setSize(100, 25);
+			if (!this._autoSize)this.setSize(Style.TEXTINPUT_WIDTH, Style.TEXTINPUT_HEIGHT);
             this._textField = new egret.TextField();
 			this._textField.addEventListener(egret.Event.CHANGE, this.onChangeHdl, this);
 			this.addChild(this._textField);
-			this.showDefaultSkin = false;
 			this.invalidate();
 		}
 		/**
@@ -116,51 +100,67 @@ module easy {
 		 */
 		public draw():void{
 			super.draw();
+			if (this._textField == null) return;
 			//console.log("@@label draw text=" + this._text);
             if (this._fontName != null){
 				this._textField.fontFamily = this.fontName;
 			}
 			if (this._color >= 0) this._textField.textColor = this._color;
 			if (this._fontSize > 0) this._textField.size = this._fontSize;
-			this._textField.textAlign = this._hAlign;
-			this._textField.verticalAlign = this._vAlign;
 			this._textField.bold = this._bold;
 			this._textField.italic = this._italic;
 			this._textField.text = this._text;
 			this._textField.multiline = this._multiline;
 			this._textField.lineSpacing = this._lineSpacing;
-			this._textField.stroke = this._stroke;
-			this._textField.strokeColor = this._strokeColor;
-			if (this._autoSize){
+            this._textField.stroke = this._stroke;
+            this._textField.strokeColor = this._strokeColor;
+            if (this._autoSize){
 				this.height = this._textField.measuredHeight;
 				this.width = this._textField.measuredWidth;
 			} else {
 				this._textField.width = this.width;
-				this._textField.height = this.height;
-			}
-			this._textField.width = this.width;
-			this._textField.height = this.height;
-		}
-		//private onTextLinkHdl(event:TextEvent):void{
-		//	if(this.link != null){
-		//		this.link.call(null, event);
-		//	}
-		//}
-		///////////////////////////////////
-		// getter/setters
-		///////////////////////////////////
-		/**
-		 * Gets / sets the callback when click on linktext.
-		 * param is a TextEvent.
-		 */
-		//public get link():Function{
-		//	return this._link;
-		//}
-		//
-		//public set link(value:Function){
-		//	this._link = value;
-		//}
+				//this._textField.height = this.height;
 
+                if (this._vAlign == egret.VerticalAlign.MIDDLE){
+                    this._textField.y = (this.height - this._textField.height)/2;
+                } else if (this._vAlign == egret.VerticalAlign.BOTTOM){
+                    this._textField.y = this.height - this._textField.height;
+                } else {
+                    this._textField.y = 0;
+                }
+			}
+            this._textField.textAlign = this._hAlign;
+            this._textField.verticalAlign = this._vAlign;
+		}
+
+		/**
+		 * 设置文本是否斜体
+		 * @param value
+		 *
+		 */
+		public set italic(value:boolean){
+			if(this._italic != value){
+				this._italic = value;
+				this.invalidate();
+			}
+		}
+		public get italic():boolean{
+			return this._italic;
+		}
+		/**
+		 * 设置文本是否粗体
+		 * @param value
+		 *
+		 */
+		public set bold(value:boolean){
+			if(this._bold != value){
+				this._bold = value;
+				this.invalidate();
+			}
+		}
+		public get bold():boolean{
+			return this._bold;
+		}
 		/**
 		 * 设置文本字体 
 		 * @param value
@@ -203,39 +203,6 @@ module easy {
 		public get color():any{
 			return this._color;
 		}
-		/**
-		 * true, 显示边框;false,不显示边框. 
-		 * @param value
-		 * 
-		 */		
-		//public set border(value:boolean){
-		//	if(this._border != value){
-         //       this._border = value;
-		//		this.invalidate();
-		//	}
-		//}
-		//public get border():boolean{
-		//	return this._border;
-		//}
-		//
-		//public set filters(value:Array<any>){
-		//	if(this._filters != value){
-		//		this._filters = value;
-		//	}
-		//}
-        
-		/**
-		 * Gets / sets whether or not text will be rendered as HTML or plain text.
-		 */
-		//public set html(value:boolean){
-         //   if(this._html != value){
-    		//	this._html = value;
-    		//	this.invalidate();
-         //   }
-		//}
-		//public get html():boolean{
-		//	return this._html;
-		//}
 		/**
 		 * 设置多行间距，外部设置一般为正数
 		 */		

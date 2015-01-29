@@ -28,18 +28,11 @@ module easy {
 	/**
 	 * 水平放置的容器
 	 */
-	export class HGroup extends BaseGroup{
-		/**
-		 * 是否显示默认样式 ,
-		 * 默认为true,显示.
-		 */
-		private _showDefaultSkin:boolean = false;
-		public _gap:number = 2;
-		public _horizontalAlign:string = egret.HorizontalAlign.LEFT;
-		public _verticalAlign:string = egret.VerticalAlign.MIDDLE;
-		private _hasInvalidate:boolean = false;//是否下一帧重绘
+	export class HGroup extends Group{
+		public _gap:number = 0;
+		public _hAlign:string = egret.HorizontalAlign.LEFT;
+		public _vAlign:string = egret.VerticalAlign.MIDDLE;
 
-		private _shapeBg:egret.Shape = null;
 		public constructor(){
 			super();
 		}
@@ -71,26 +64,26 @@ module easy {
 		/**
 		 * 水平方向布局方式
 		 */
-		public get horizontalAlign():string{
-			return this._horizontalAlign;
+		public get hAlign():string{
+			return this._hAlign;
 		}
 
-		public set horizontalAlign(value:string){
-			if(this._horizontalAlign != value){
-				this._horizontalAlign = value;
+		public set hAlign(value:string){
+			if(this._hAlign != value){
+				this._hAlign = value;
 				this.invalidate();
 			}
 		}
 		/**
 		 * 垂直方向布局方式
 		 */
-		public get verticalAlign():string{
-			return this._verticalAlign;
+		public get vAlign():string{
+			return this._vAlign;
 		}
 
-		public set verticalAlign(value:string){
-			if(this._verticalAlign != value){
-				this._verticalAlign = value;
+		public set vAlign(value:string){
+			if(this._vAlign != value){
+				this._vAlign = value;
 				this.invalidate();
 			}
 		}
@@ -105,6 +98,10 @@ module easy {
 				this.invalidate();
 			}
 		}
+		public get width():number {
+			if (this._explicitWidth == NaN || this._explicitWidth == undefined) return 0;
+			return this._explicitWidth;
+		}
 		/**
 		 * 设置高
 		 * @param value
@@ -116,56 +113,22 @@ module easy {
 				this.invalidate();
 			}
 		}
-
-		/**
-		 * 属性失效,需要下一帧重新绘制更新
-		 */
-		public invalidate():void{
-			if(!this._hasInvalidate)this.addEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
-			this._hasInvalidate = true;
-		}
-		/**
-		 * 重绘通知
-		 */
-		public onInvalidate(event:Event):void{
-			this.removeEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
-			this._hasInvalidate = false;
-			this.draw();
-		}
-		/**
-		 * 设置默认背景是否显示
-		 */
-		public set showDefaultSkin(value:boolean){
-			if(this._showDefaultSkin != value){
-				this._showDefaultSkin = value;
-				this.invalidate();
-			}
+		public get height():number {
+			if (this._explicitHeight == NaN || this._explicitHeight == undefined) return 0;
+			return this._explicitHeight;
 		}
 
-		public get showDefaultSkin():boolean{
-			return this._showDefaultSkin;
-		}
 		/**
 		 * 更新显示组件的各项属性,重新绘制显示
 		 */
 		public draw():void{
-			if (this._shapeBg && this._shapeBg.parent) {
-				this._shapeBg.parent.removeChild(this._shapeBg);
+			if (this._bgImage && this._bgImage.parent) {
+				this._bgImage.parent.removeChild(this._bgImage);
 			}
 			this.updateLayout();
-			if (this.showDefaultSkin){
-				if (this._shapeBg == null){
-					this._shapeBg = new egret.Shape();
-				}
-				this._shapeBg.graphics.clear();
-				this._shapeBg.graphics.beginFill(Style.BACKGROUND, 1);
-				this._shapeBg.graphics.drawRect(0, 0, this._explicitWidth, this._explicitHeight);
-				this._shapeBg.graphics.endFill();
-				this._shapeBg.graphics.lineStyle(1,0x00ff00);
-				this._shapeBg.graphics.drawRect(0, 0, this._explicitWidth, this._explicitHeight);
-				this._shapeBg.width = this.width;
-				this._shapeBg.height = this.height;
-				this.addChildAt(this._shapeBg, 0)
+			super.draw();
+			if (this._showBg){
+				this.addChildAt(this._bgImage, 0)
 			}
 		}
 		/**
@@ -186,22 +149,22 @@ module easy {
 			for(i = 0; i < this.numChildren; i++){
 				child = this.getChildAt(i);
 				if(i == 0){
-					if(this._horizontalAlign == egret.HorizontalAlign.LEFT){
+					if(this._hAlign == egret.HorizontalAlign.LEFT){
 						child.x = 0;
-					}else if(this._horizontalAlign == egret.HorizontalAlign.CENTER){
+					}else if(this._hAlign == egret.HorizontalAlign.CENTER){
 						child.x = (this.width - wElements)/2;
-					}else if(this._horizontalAlign == egret.HorizontalAlign.RIGHT){
+					}else if(this._hAlign == egret.HorizontalAlign.RIGHT){
 						child.x = this.width - wElements;
 					}
 				}else {
 					childLast = this.getChildAt(i - 1);
 					child.x = childLast.x + childLast.width + this.gap;
 				}
-				if(this._verticalAlign == egret.VerticalAlign.TOP){
+				if(this._vAlign == egret.VerticalAlign.TOP){
 					child.y = 0;
-				}else if(this._verticalAlign == egret.VerticalAlign.MIDDLE){
+				}else if(this._vAlign == egret.VerticalAlign.MIDDLE){
 					child.y = (this._explicitHeight - child.height)/2;
-				}else if(this._verticalAlign == egret.VerticalAlign.BOTTOM){
+				}else if(this._vAlign == egret.VerticalAlign.BOTTOM){
 					child.y = this._explicitHeight - child.height;
 				}
 				//console.log("@@@@@HGroup x=" + child.x + ", y=" + child.y);

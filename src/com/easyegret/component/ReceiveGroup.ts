@@ -38,6 +38,25 @@ module easy{
          * 对应的ui展现
          */
         public _ui:egret.DisplayObject = null;
+        /**
+         * ui资源已准备好
+         * @type {boolean}
+         * @private
+         */
+        public _uiResReady:boolean = false;
+        /**
+         * loding的class对象
+         * view是LoadingViewUI类
+         * win是LoadingWinUI类
+         * 这两个值分别在view和win子类中默认赋值
+         */
+        public _loadingUIClz:any = null;
+
+        public enterCompleted:boolean = false;//进入状态是否完成
+        /**
+         * 进入的效果
+         */
+        private _enterEffect:IEffect = null;
 
         public constructor() {
             super();
@@ -51,6 +70,7 @@ module easy{
         }
         /**
          * 添加事件的处理
+         * 注意:必须调用MessageControler.addEvent()注册事件名称,否者不会转发到这里
          * 如果没有对应的的类型在此出现,则改Handle对Event事件到此为止,不再派发,防止造成事件死循环
          * @param type MyEvent事件的类型
          * @param func  对应的call back function,不包含onEvent前缀
@@ -88,7 +108,28 @@ module easy{
          * 可以再次根据外部数据情况做一些逻辑处理
          */
         public enter():void {
+            //console.log("@@enter=" + egret.getQualifiedClassName(this))
+            this.enterTransition();
+        }
 
+        /**
+         * enter的过渡效果
+         */
+        public enterTransition():void {
+            //console.log("@@enterTransition=" + egret.getQualifiedClassName(this))
+            this.enterCompleted = false;
+            if (this._enterEffect){
+                this._enterEffect.play();
+            } else {
+                this.enterTransitionComplete();
+            }
+        }
+
+        /**
+         * enter的过渡效果结束
+         */
+        public enterTransitionComplete():void {
+            //console.log("@@enterTransitionComplete=" + egret.getQualifiedClassName(this))
         }
 
         /**
@@ -96,7 +137,21 @@ module easy{
          * 做一些数据的销毁或者初始化,保证下次进入的时候,不会残留
          */
         public outer():void {
-
+            //console.log("@@outer=" + egret.getQualifiedClassName(this))
+            this.outerTransition();
+        }
+        /**
+         * outer的过渡效果
+         */
+        public outerTransition():void {
+            //console.log("@@outerTransition=" + egret.getQualifiedClassName(this))
+        }
+        /**
+         * outer的过渡效果结束
+         */
+        public outerTransitionComplete():void {
+            //console.log("@@outerTransitionComplete=" + egret.getQualifiedClassName(this))
+            this.removeFromParent();
         }
         /**
          * 获取ui层的显示对象
@@ -117,7 +172,7 @@ module easy{
                 this.setSize(this._ui.width, this._ui.height);
                 //console.log("!!!view set ui!! 1111 this._ui=" + egret.getQualifiedClassName(this._ui));
             }
-            this.showDefaultSkin = false;
+            this.showBg = false;
         }
         /**
          * 做ui的销毁
@@ -128,6 +183,38 @@ module easy{
                 //if (this._ui.hasOwnProperty("destroy"))this._ui.destroy();
                 this._ui = null;
             }
+        }
+        /**
+         * 检测资源是否完成
+         * @returns {boolean}
+         */
+        public checkResReady():boolean {
+            //检测ui的情况,自动启动loading加载
+            //console.log("checkResReady 000 this._ui=" + this._ui + ", resSpriteSheet=" + this._ui.hasOwnProperty("resSpriteSheet") + ", resFiles=" + this._ui.hasOwnProperty("resFiles"))
+            //console.log("checkResReady 000 this._ui=" + this._ui)
+            if (!this._uiResReady && this._ui && this._ui.hasOwnProperty("resSpriteSheet") && this._ui.hasOwnProperty("resFiles")){
+                //console.log("checkResReady 1111")
+                if (this._loadingUIClz) {
+                    //console.log("checkResReady 2222")
+                    var loading:LoadingBaseUI = ObjectPool.getByClass(this._loadingUIClz, false);
+                    loading.enter();
+                } else {
+                    //console.log("checkResReady 3333")
+                    //没有对应的loading,为避免一直加载不进去,这里直接return true
+                    return true;
+                }
+                //console.log("checkResReady 4444")
+                return false;
+            }
+            return true;
+        }
+        /**
+         * 首次材质下载完成会调用加载一次,刷新UI皮肤显示
+         * 使用了框架的UI机制,单ui的资源下载完成会调用改方法刷新
+         * 若view中有逻辑使用到ui的素材,应该在这里做素材的赋值
+         */
+        public validateNow():void{
+            if (this._ui && this._ui["validateNow"]) this._ui["validateNow"]();
         }
     }
 }

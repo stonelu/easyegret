@@ -22,7 +22,7 @@ module easy.rpg {
             super();
             this.setMapInfo(mapInfo);
             this.touchEnabled = true;
-            this.showDefaultSkin = true;
+            this.showBg = true;
             this.touchNonePixel = true;
         }
         public createChildren():void {

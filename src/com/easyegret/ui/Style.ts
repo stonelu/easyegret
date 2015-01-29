@@ -41,7 +41,7 @@ module easy {
 		public static LIST_SELECTED:number = 0xCCCCCC;
 		public static LIST_ROLLOVER:number = 0XDDDDDD;
 		public static BUTTON_DEFAULT_WIDTH:number = 100;
-		public static BUTTON_DEFAULT_HEIGHT:number = 30;
+		public static BUTTON_DEFAULT_HEIGHT:number = 32;
 
 
 		
@@ -69,7 +69,7 @@ module easy {
         
 		public static TEXTINPUT_HEIGHT:number = 25;
 		public static TEXTINPUT_WIDTH:number = 100;
-		public static TEXTINPUT_COLOR:number = 0x000000;
+		public static TEXTINPUT_COLOR:number = 0xffffff;
         
         public static HORIZONTAL:string = "horizontal";
         public static VERTICAL:string = "vertical";

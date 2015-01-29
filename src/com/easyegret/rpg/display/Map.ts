@@ -50,7 +50,7 @@ module easy.rpg {
             this._enterPoint = new egret.Point();
             //初始化数据
             this.setMapInfo(mapInfo);
-            this.showDefaultSkin = false;
+            this.showBg = false;
             this.touchEnabled = false;
         }
 

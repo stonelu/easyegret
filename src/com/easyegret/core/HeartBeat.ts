@@ -79,20 +79,24 @@ module easy {
             for (i = 0; i < lenght; i++) {
                 item = HeartBeat._functionCallList.pop();
                 //判断func的参数情况
+                //console.log("1111111")
                 if (item.param && item.param.length > 0) {
+                    //console.log("222222")
                     //显式定义参数,直接用指定参数返回
                     item.func.apply(item.thisArg, item.param);
                 } else {//无指定参数
-                    if (!item.func.arguments || item.func.arguments.length == 0) {//无参数要求
+                    //console.log("333333 arguments=" + item.func.length)
+                    if (item.func.length == 0) {//无参数要求
                         item.func.call(item.thisArg);
                     } else {//func有参数,参数boolean返回true代表最后一次call, 参数number表示第几次调用
-                        if (item.func.arguments[0] instanceof Boolean) {
+                        //console.log("heatbeat=" + typeof(item.func.arguments[0]))
+                        //if (item.func.arguments[0] instanceof boolean) {
                             item.func.call(item.thisArg, item.del);
-                        } else if (item.func.arguments[0] instanceof Number) {
-                            item.func.call(item.thisArg, item.loopcount);
-                        } else {
-                            item.func.call(item.thisArg, null);
-                        }
+                        //} else if (item.func.arguments[0] instanceof number) {
+                        //    item.func.call(item.thisArg, item.loopcount);
+                        //} else {
+                        //    item.func.call(item.thisArg, null);
+                        //}
                     }
                 }
             }
@@ -125,7 +129,7 @@ module easy {
         public static removeListener(thisArg:any, respone:Function):void {
             var i:number = 0;
             for (i = 0; i < HeartBeat._listeners.length; i++) {
-                if (HeartBeat._listeners[i].func == respone && HeartBeat._listeners[i].thisArg) {
+                if (HeartBeat._listeners[i].func == respone && HeartBeat._listeners[i].thisArg == thisArg) {
                     HeartBeat._listeners[i].del = true;
                     break;
                 }

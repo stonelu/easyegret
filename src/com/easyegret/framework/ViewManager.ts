@@ -31,8 +31,9 @@ module easy{
      */
     export class ViewManager {
         private static _instanceDict:Object = {};//view对象的缓存字典
-        private static mainContainer:egret.DisplayObjectContainer = null;//游戏画面容器
+        public static mainContainer:egret.DisplayObjectContainer = null;//游戏画面容器
         public static currentView:View = null;//当前显示的view
+        public static _waitChangeView:View = null;//等待进入的view对象
 
         /**
          * 切换view显示
@@ -45,30 +46,53 @@ module easy{
                 ViewManager.mainContainer.x = GlobalSetting.STAGE_WIDTH/2;
                 ViewManager.mainContainer.y = GlobalSetting.STAGE_HEIGHT/2;
             }
-            if (ViewManager.currentView){
-                ViewManager.currentView.outer();
-                ViewManager.currentView.removeFromParent();
-            }
+
             var key:string = egret.getQualifiedClassName(clz);
             //console.log("View change clz=" + key);
-            var viewInstance:View = null;
             if (ViewManager._instanceDict.hasOwnProperty(key)){
-                viewInstance = ViewManager._instanceDict[key];
+                ViewManager._waitChangeView = ViewManager._instanceDict[key];
             } else {
-                viewInstance = new clz();
-                ViewManager._instanceDict[key] = viewInstance;//映射缓存
+                ViewManager._waitChangeView = new clz();
+                ViewManager._instanceDict[key] = ViewManager._waitChangeView;//映射缓存
             }
-            if (viewInstance) {
-                //旧的view
-                if (ViewManager.currentView != null){
-                    ViewManager.currentView.outer();
-                }
-                ViewManager.currentView = viewInstance;
+            if (ViewManager._waitChangeView == ViewManager.currentView){
+                ViewManager._waitChangeView = null;
+                console.log("相同的View change clz=" + key);
+                return;
+            }
+            //检测素材资源是否准备完成,没完成则等待进入
+            //console.log("ViewManager wait.view=" + ViewManager._waitChangeView);
+            if (ViewManager._waitChangeView){//未保证view创建子元素,首先要加入场景中触发创建
+                ViewManager._waitChangeView.visible = false;
+                ViewManager.mainContainer.addChildAt(ViewManager._waitChangeView, 0);
+            }
+            if (ViewManager._waitChangeView &&ViewManager._waitChangeView.checkResReady()) {
+                //检测完成情况,未完成会自动启动loading,已经完成,直接enter
+                ViewManager.waitViewDoEnter();
+                //未完成下载,则等待Loading回调ViewManager.waitViewDoEnter()方法,完成加载
+            }
+        }
+
+        /**
+         * 等待进入的view已经准备完毕,开始enter
+         */
+        public static waitViewDoEnter():void {
+            //console.log("@@ViewManager waitViewDoEnter view=" + egret.getQualifiedClassName(ViewManager._waitChangeView));
+            //if (ViewManager.currentView){
+            //    //console.log("@@ViewManager 000 waitViewDoEnter")
+            //    ViewManager.currentView.outer();
+            //}
+            if (ViewManager._waitChangeView) {
+                ViewManager._waitChangeView.removeFromParent();
                 //新的view
-                ViewManager.mainContainer.addChild(viewInstance);
-                viewInstance.anchorX = 0.5
-                viewInstance.anchorY = 0.5
-                viewInstance.enter();
+                if (!ViewManager._waitChangeView._uiResReady) ViewManager._waitChangeView._uiResReady = true;//ui的res已经准备完成,下次不需要download了
+                ViewManager._waitChangeView.removeFromParent();
+                ViewManager.mainContainer.addChild(ViewManager._waitChangeView);
+                ViewManager._waitChangeView.visible = true;
+                ViewManager._waitChangeView.anchorX = 0.5
+                ViewManager._waitChangeView.anchorY = 0.5
+                ViewManager._waitChangeView.enter();
+                //console.log("@@ViewManager 111 waitViewDoEnter")
             }
         }
 

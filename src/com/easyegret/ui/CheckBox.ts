@@ -50,7 +50,7 @@ module easy {
 		public createChildren():void{
 			super.createChildren();
             this.setSize(100, 25);
-			this.showDefaultSkin = false;
+			this.showBg = false;
             this.touchNonePixel = true;
             this._btnNormal = new Button();
             this.addChild(this._btnNormal);
@@ -58,7 +58,7 @@ module easy {
             this.addChild(this._btnSelected);
             this._label = new Label();
             this.addChild(this._label);
-            this._label.showDefaultSkin = false;
+            this._label.showBg = false;
 
 			this.addEventListener(TouchEvent.TOUCH, this.onTouchEvent, this);
 		}

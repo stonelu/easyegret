@@ -28,7 +28,7 @@ module easy {
     /**
      * 按钮
      */
-	export class Button extends Group {
+	export class Button extends BaseGroup {
         public static TOGGLE_PREFIX:string = "ui#button#toggle_";//toggle事件的前缀,尽量避免受到其他事件名称的混淆
 
         public static STATE_UP:string = "up";
@@ -47,36 +47,44 @@ module easy {
         private _imgLabel:egret.Bitmap = null;//显示文字图片的image
         private _imgIcon:egret.Bitmap = null;//显示图标用的image
         
-        private _initDisplayData:boolean = false;//时候初始化显示对象
+        private _initDisplayData:boolean = false;//是否初始化显示对象
         public _selected:boolean = false;//选择时为ture
         private _toggleGroup:string = null;//toggle分组名称
-        public stateArray:Array<any> = [Button.STATE_UP, Button.STATE_OVER, Button.STATE_DOWN];//正常的按钮,只有三态,第四态是禁用态,其他的态可以自己加入
+        public stateArray:Array<any> = [Button.STATE_UP, Button.STATE_DOWN];//正常的按钮,只有三态,第四态是禁用态,其他的态可以自己加入
         private _currentState:string = Button.STATE_UP;//当前态
         public _textureDict:any = {};//各材质的映射,在给予img之前,保存在这个映射中
 		//private _scaleEnable:boolean = false;// 直接拉伸
         
         private _verticalSplit:boolean = true;//bitmapdata采用竖直切割的方式
-        public _gapSplit:number = 0;//3态切割间隔
-        public _xOffsetSplit:number = 0;//切割x起始
-        public _yOffsetSplit:number = 0;//切割y起始
+        //public _gapSplit:number = 0;//3态切割间隔
+        //public _xOffsetSplit:number = 0;//切割x起始
+        //public _yOffsetSplit:number = 0;//切割y起始
         //文字部分的设定
         private _labelMarginLeft:number = 0;
         private _setLabelMarginLeft:boolean = false;
         private _iconMarginLeft:number = 0;
         private _setIconMarginLeft:boolean = false;
-        private _autoSize:boolean = false;
+        /**
+         * 适合材质的尺寸
+         */
+        private _autoSize:boolean = true;
         private _labelColor:number = Style.BUTTON_TEXT;
-        private _buttonMode:boolean = true;
 
         //labe字体大小
         private _fontSize:number = 12;
         //label字体
         private _fontName:string = null;
 
-        /**
-         * 适合材质的尺寸
-         */
-        private _fixTextureSize:boolean = true;
+        private _hasInvalidate:boolean = false;//是否下一帧重绘
+
+        private _scaleEnable:boolean = false;
+        private _scale9GridEnable:boolean = false;
+        private _scale9GridRect:egret.Rectangle = null;//九宫拉伸的尺寸
+        private _fillMode:string = "scale";//scale, repeat.
+
+        //声音播放
+        private _soundName:string = null;
+        private _sound:egret.Sound = null;
 
         public constructor() {
             super();
@@ -86,13 +94,7 @@ module easy {
             super.createChildren();
             this.touchEnabled = true;//事件接收
             this.touchChildren = false;
-			this._coolDownEabled = Style.allowButtonDefaultCoolDown;
-			if(Style.allowButtonDefaultCoolDown){
-				this._coolDownFrames = Style.defaultCoolDownFrames;
-			}
-            this.showDefaultSkin = false;//自有背景,不需要默认背景绘制
-            if (this.width == 0) this.width = Style.BUTTON_DEFAULT_WIDTH;
-            if (this.height == 0) this.height = Style.BUTTON_DEFAULT_HEIGHT;
+            this.setSize(Style.BUTTON_DEFAULT_WIDTH, Style.BUTTON_DEFAULT_HEIGHT);
             //背景图多态显示
             this._imgDisplay = new egret.Bitmap();
             this._imgDisplay.width = this.width;
@@ -105,12 +107,28 @@ module easy {
             this._label.width = this.width;
             this._label.height = this.height;
             this._label.hAlign = egret.HorizontalAlign.CENTER;
-            this._label.showDefaultSkin = false;
+            this._label.showBg = false;
 			this.addChild(this._label);
 
             this.addEventListener(egret.TouchEvent.TOUCH_BEGIN, this.onTouchEvent, this);
             this.addEventListener(egret.TouchEvent.TOUCH_END, this.onTouchEvent, this);
             //this.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onTouchEvent, this);
+            this.invalidate();
+        }
+        /**
+         * 属性失效,需要下一帧重新绘制更新
+         */
+        public invalidate():void{
+            if(!this._hasInvalidate)this.addEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
+            this._hasInvalidate = true;
+        }
+        /**
+         * 重绘通知
+         */
+        public onInvalidate(event:egret.Event):void{
+            this.removeEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
+            this._hasInvalidate = false;
+            this.draw();
         }
         public onTouchEvent(event:egret.TouchEvent) : void {
             if (!this.enabled){
@@ -123,10 +141,12 @@ module easy {
                     if (event.type == egret.TouchEvent.TOUCH_BEGIN){
                         this.selected = !this._selected;
                     }
+                    this.onPlaySound();
                    // console.log("Button _toggleGroup=" + this._toggleGroup + ", _selected=" + this._selected);
                 } else {
                     if (event.type == egret.TouchEvent.TOUCH_BEGIN){
                         this._currentState = Button.STATE_DOWN;
+                        this.onPlaySound();
                     } else if (event.type == egret.TouchEvent.TOUCH_END) {
                         this._currentState = Button.STATE_UP;
                     } else if (event.type == egret.TouchEvent.TOUCH_MOVE) {
@@ -136,34 +156,6 @@ module easy {
             }
             this.invalidate();
         }
-
-        //public set enabled(value:boolean){
-        //    super.enabled = value;
-        //    this._currentState = Button.STATE_DISABLE;
-        //    if(!value){
-        //        this.touchEnabled = false;
-        //        if (!this.isStateExist(Button.STATE_DISABLE)) {
-        //            this.stateArray.push(Button.STATE_DISABLE);
-        //        }
-        //        /*
-        //        if (!this._textureDict[Button.STATE_DISABLE]){//不存在disable的材质,使用up的材质变色
-        //            this._textureDict[Button.STATE_DISABLE] = this._textureDict[Button.STATE_UP];
-        //            //TODO 加滤镜
-        //        }
-        //        */
-        //        if(this.statesLength == 4){
-        //            this._label.color = 0x74746e;
-        //        }else{
-        //            if(Style.allowColorFilterButtonEnabled){
-        //                //this.filter = cmf;
-        //            }
-        //        }
-        //    } else {
-        //        this.touchEnabled = true;
-        //    }
-        //    this.invalidate();
-        //}
-
         public get currentState():string{
             return this._currentState;
         }
@@ -174,52 +166,130 @@ module easy {
                 this.invalidate();
             }
         }
-        /**
-         * 是否主动设置为false. true,是; false,否. 
-         */		
-        private _isInitiativeFalse:boolean = false;//2012-11-26,yuxinli,wangpan.事件处理顺序相关修改.
-        
-        private _coolDownEabled:boolean = false;
-        
-        /**
-         * 是否应用点击冷却.
-         */
-        public get coolDownEabled():boolean{
-            return this._coolDownEabled;
-        }
-        
-        /**
-         * @private
-         */
-        public set coolDownEabled(value:boolean){
-            this._coolDownEabled = value;
-        }
-        
-        
-        private _coolDownFrames:number = 2;
-        /**
-         * 按钮点击后冷却帧数.
-         */		
-        public get coolDownFrames():number{
-            return this._coolDownFrames;
-        }
-        
-        public set coolDownFrames(value:number){
-            this._coolDownFrames = value;
-        }
+
         public get texture():egret.Texture{
             return this._texture;
         }
 
         public set texture(value:egret.Texture){
             if (this._texture != value) {
-                //this._initDisplayData = false;
-                //this._useSource = false;
+                this._initDisplayData = false;
                 this._texture = value;
                 this.invalidate();
             }
         }
+        /**
+         * Sets/gets the fillMode of the scale9Grid bitmap.(scale|repeat)
+         */
+        public get fillMode():string{
+            return this._fillMode;
+        }
 
+        public set fillMode(value:string){
+            if (this._fillMode != value){
+                this._fillMode = value;
+                this.invalidate();
+            }
+        }
+
+        /**
+         *  Sets/gets the common scaleEnable of the bitmap.
+         */
+        public get scaleEnable():boolean{
+            return this._scaleEnable;
+        }
+
+        public set scaleEnable(value:boolean){
+            if (this._scaleEnable != value) {
+                this._scaleEnable = value;
+                this.invalidate();
+            }
+        }
+
+        /**
+         * 默认背景texture的九宫格拉伸设定
+         * 只有showDefaultSkin并且设置了defaultSkinTexture,才有效
+         * 默认绘制的背景是纯色的,所以不需要进行九宫拉伸设定
+         */
+        public get scale9GridEnable():boolean{
+            return this._scale9GridEnable;
+        }
+
+        public set scale9GridEnable(value:boolean){
+            if (this._scale9GridEnable != value) {
+                this._scale9GridEnable = value;
+                if (this._scale9GridEnable && this._scale9GridRect == null) this._scale9GridRect = new egret.Rectangle();
+                this.invalidate();
+            }
+        }
+        /**
+         * Sets the x of the bitmap's scale9Grid.
+         */
+        public set scale9GridX(value:number){
+            if (this._scale9GridRect == null) this._scale9GridRect = new egret.Rectangle();
+            if(this._scale9GridRect.x != value){
+                this._scale9GridRect.x = value;
+                this.invalidate();
+            }
+        }
+        public get scale9GridX():number{
+            if (this._scale9GridRect)return this._scale9GridRect.x;
+            return 0;
+        }
+        /**
+         * Sets the y of the bitmap's scale9Grid.
+         */
+        public set scale9GridY(value:number){
+            if (this._scale9GridRect == null) this._scale9GridRect = new egret.Rectangle();
+            if(this._scale9GridRect.y != value){
+                this._scale9GridRect.y = value;
+                this.invalidate();
+            }
+        }
+        public get scale9GridY():number{
+            if (this._scale9GridRect)return this._scale9GridRect.y;
+            return 0;
+        }
+        /**
+         * Sets the width of the bitmap's scale9Grid.
+         */
+        public set scale9GridWidth(value:number){
+            if (this._scale9GridRect == null) this._scale9GridRect = new egret.Rectangle();
+            if(this._scale9GridRect.width != value){
+                this._scale9GridRect.width = value;
+                this.invalidate();
+            }
+        }
+        public get scale9GridWidth():number{
+            if (this._scale9GridRect)return this._scale9GridRect.width;
+            return 0;
+        }
+        /**
+         * Sets the height of the bitmap's scale9Grid.
+         */
+        public set scale9GridHeight(value:number){
+            if (this._scale9GridRect == null) this._scale9GridRect = new egret.Rectangle();
+            if(this._scale9GridRect.height != value){
+                this._scale9GridRect.height = value;
+                this.invalidate();
+            }
+        }
+        public get scale9GridHeight():number{
+            if (this._scale9GridRect)return this._scale9GridRect.height;
+            return 0;
+        }
+
+        /**
+         * 九宫设置的区域
+         * @returns {egret.Rectangle}
+         */
+        public get scale9GridRect():egret.Rectangle{
+            return this._scale9GridRect;
+        }
+
+        public set scale9GridRect(rect:egret.Rectangle) {
+            this._scale9GridRect = rect;
+        }
         /**
          * 绘制
          */
@@ -228,34 +298,33 @@ module easy {
             //if (this._data)console.log("@@Button draw _text=" + this._text + ", selected=" + this.selected + ", data=" + this._data.id);
             //初始化显示对象和数据
             if (!this._initDisplayData){
-                this._initDisplayData = true;
                 if (!this._texture){
+                    //console.log("button.w=" + this.width + ", h=" + this.height)
                     //没有材质,绘制一个默认的材质背景
                     var shape:egret.Shape = new egret.Shape();
                     shape.width = this.width;
-                    shape.height = this.height * 3;
+                    shape.height = this.height * 2;
                     shape.graphics.beginFill(Style.BUTTON_FACE);
                     shape.graphics.drawRect(0, 0 , this.width, this.height);
                     shape.graphics.beginFill(0xfff666);
                     shape.graphics.drawRect(0, this.height , this.width, this.height);
-                    shape.graphics.beginFill(0x33ff66);
-                    shape.graphics.drawRect(0, this.height * 2, this.width, this.height);
+                    //shape.graphics.beginFill(0x33ff66);
+                    //shape.graphics.drawRect(0, this.height * 2, this.width, this.height);
                     shape.graphics.endFill();
-                    if (this.border){
-                        shape.graphics.lineStyle(1, 0x000000);
-                        shape.graphics.drawRect(1, 1 , this.width-2, 3* this.height-2);
+                    //boder
+                    shape.graphics.lineStyle(1, 0x000000);
+                    shape.graphics.drawRect(1, 1 , this.width-2, 2* this.height-2);
 
-                        shape.graphics.moveTo(1, this.height-1);
-                        shape.graphics.lineTo(this.width-2, this.height-1);
-                        shape.graphics.moveTo(1, this.height + 1);
-                        shape.graphics.lineTo(this.width-2, this.height + 1);
+                    shape.graphics.moveTo(1, this.height-1);
+                    shape.graphics.lineTo(this.width-2, this.height-1);
+                    shape.graphics.moveTo(1, this.height + 1);
+                    shape.graphics.lineTo(this.width-2, this.height + 1);
 
-                        shape.graphics.moveTo(1, 2*this.height-1);
-                        shape.graphics.lineTo(this.width-2, 2*this.height-1);
-                        shape.graphics.moveTo(1, 2*this.height + 1);
-                        shape.graphics.lineTo(this.width-2, 2*this.height + 1);
+                    //shape.graphics.moveTo(1, 2*this.height-1);
+                    //shape.graphics.lineTo(this.width-2, 2*this.height-1);
+                    //shape.graphics.moveTo(1, 2*this.height + 1);
+                    //shape.graphics.lineTo(this.width-2, 2*this.height + 1);
 
-                    }
                     var renderTexture:egret.RenderTexture = new egret.RenderTexture();
                     renderTexture.drawToTexture(shape);
                     this._texture = renderTexture;
@@ -263,19 +332,41 @@ module easy {
                 this.splitTextureSource();//切割成态数对应的材质
             }
             if (this._imgDisplay == null) return;
-            this._imgDisplay.texture = this._textureDict[this._currentState];
-            if (this._fixTextureSize && this._imgDisplay.texture){
-                this.width = this._imgDisplay.width;
-                this.height = this._imgDisplay.height;
+            //一态的时候，第二态用第一态的资源 但是alpha 为0.8 scale为0.9
+            if(this.statesLength == 1 && this._currentState == Button.STATE_DOWN){
+                this._imgDisplay.texture = this._textureDict[Button.STATE_UP];
+                this._imgDisplay.alpha = 0.8;
+                this._imgDisplay.scaleX = 0.9;
+                this._imgDisplay.scaleY = 0.9;
+                if(this._imgLabel){
+                    this._imgLabel.alpha = 0.8;
+                    this._imgLabel.scaleX = 0.9;
+                    this._imgLabel.scaleY = 0.9;
+                }
+            }else{
+                this._imgDisplay.texture = this._textureDict[this._currentState];
+                this._imgDisplay.alpha = 1;
+                this._imgDisplay.scaleX = 1;
+                this._imgDisplay.scaleY = 1;
+                if(this._imgLabel){
+                    this._imgLabel.alpha = 1;
+                    this._imgLabel.scaleX = 1;
+                    this._imgLabel.scaleY = 1;
+                }
             }
-            this._imgDisplay.width = this.width;
-            this._imgDisplay.height = this.height;
+
             if (this.scale9GridEnable && this.scale9GridRect != null){//九宫拉伸设置
                 this._imgDisplay.scale9Grid = this.scale9GridRect;
-                this._imgDisplay.fillMode = egret.BitmapFillMode.SCALE;
             } else {
                 this._imgDisplay.scale9Grid = null;
             }
+            this._imgDisplay.fillMode = this._fillMode;
+            this._imgDisplay.width = this.width;
+            this._imgDisplay.height = this.height;
+            this._imgDisplay.anchorOffsetX = this._imgDisplay.width / 2;
+            this._imgDisplay.anchorOffsetY = this._imgDisplay.height / 2;
+            this._imgDisplay.x = this._imgDisplay.width / 2;
+            this._imgDisplay.y = this._imgDisplay.height / 2;
             //console.log("Button.draw 1111 this.width=" + this.width + ", this.height=" + this.height);
 
 			if(this._textureLabel != null){//文字图片显示
@@ -284,8 +375,10 @@ module easy {
                     this.addChild(this._imgLabel);
                 }
                 this._imgLabel.texture = this._textureLabel;
-				this._imgLabel.x = (this.width - this._imgLabel.width)/2;
-				this._imgLabel.y = (this.height - this._imgLabel.height)/2;
+                this._imgLabel.anchorOffsetX = this._imgLabel.width / 2;
+                this._imgLabel.anchorOffsetY = this._imgLabel.height / 2;
+				this._imgLabel.x = (this.width - this._imgLabel.width)/2 + this._imgLabel.width / 2;
+				this._imgLabel.y = (this.height - this._imgLabel.height)/2 + this._imgLabel.height / 2;
 			}
 			if(this._textureIcon != null){//图标显示
                 if (this._imgIcon == null){
@@ -314,44 +407,45 @@ module easy {
                 this._label.y = (this.height - this._label.height)/2;
             }
 		}
-		///////////////////////////////////
-		// event handlers
-		///////////////////////////////////
-		
-		public onBtnCooldownHdl(endCall:boolean):void{
-			if(this._isInitiativeFalse){
-				this._isInitiativeFalse = false;
-			}else{
-				this.enabled = true;
-			}
-			//SystemHeartBeat.removeEventListener(onBtnCooldownHdl);
-		}
-		///////////////////////////////////
-		// getter/setters
-		///////////////////////////////////
         /**
          * 切割Texture材质集
          * @param value
          */
         private splitTextureSource():void {
             if (this._texture){
+                //console.log("splitTextureSource texture.w=" + this._texture._sourceWidth + ", h=" + this._texture._sourceHeight + ", name=" + this.name)
+                this._initDisplayData = true;
                 var i:number = 0;
+                var xOffset:number = 0;//this._texture._bitmapX;
+                var yOffset:number = 0;//this._texture._bitmapY;
                 var splietWidth:number = 0;
                 var splietHeight:number = 0;
+                var textureWidth:number = this._texture._bitmapWidth;
+                if (textureWidth == 0) textureWidth = this._texture._sourceWidth;
+                var textureHeight:number = this._texture._bitmapHeight;
+                if (textureHeight == 0) textureHeight = this._texture._sourceHeight;
                 if (this._verticalSplit){
-                    splietWidth = this._texture._sourceWidth;
-                    splietHeight = this._texture._sourceHeight/this.stateArray.length;
+                    splietWidth = textureWidth;
+                    splietHeight = textureHeight/this.statesLength;
                 } else {
-                    splietWidth = this._texture._sourceWidth/this.stateArray.length;
-                    splietHeight = this._texture._sourceHeight;
+                    splietWidth = textureWidth/this.statesLength;
+                    splietHeight = textureHeight;
                 }
+                //console.log("splitTextureSource _bitmapWidth=" + this._texture._bitmapWidth + ", _bitmapHeight=" + this._texture._bitmapHeight + ", this.stateArray.length=" + this.stateArray.length)
+                //console.log("splitTextureSource splietWidth=" + splietWidth + ", splietHeight=" + splietHeight + ", this.stateArray.length=" + this.stateArray.length)
+                //console.log("splitTextureSource xOffset=" + xOffset + ", yOffset=" + yOffset + ", bitmapX=" + this._texture._bitmapX + ", bitmapY=" + this._texture._bitmapY)
                 var spriteSheet:egret.SpriteSheet = new egret.SpriteSheet(this._texture);
-                for (i = 0; i < this.stateArray.length; i++)  {
-                    if (this._verticalSplit){
-                        this._textureDict[this.stateArray[i]] = spriteSheet.createTexture(this.name + Math.round(Math.random()*999999)  + "_" + this.stateArray[i], 0, i*splietHeight, splietWidth, splietHeight);
+                for (i = 0; i < this.stateArray.length; i++) {
+                    if (this._verticalSplit) {
+                        this._textureDict[this.stateArray[i]] = spriteSheet.createTexture(this.name + Math.round(Math.random() * 999999) + "_" + this.stateArray[i], xOffset, i * splietHeight + yOffset, splietWidth, splietHeight);
                     } else {
-                        this._textureDict[this.stateArray[i]] = spriteSheet.createTexture(this.name + Math.round(Math.random()*999999) + "_" + this.stateArray[i],i*splietWidth, 0, splietWidth, splietHeight);
+                        this._textureDict[this.stateArray[i]] = spriteSheet.createTexture(this.name + Math.round(Math.random() * 999999) + "_" + this.stateArray[i], i * splietWidth + xOffset, yOffset, splietWidth, splietHeight);
                     }
+                }
+
+                if (this._autoSize){
+                    this.width = splietWidth;
+                    this.height = splietHeight;
                 }
             }
         }
@@ -359,14 +453,9 @@ module easy {
 		 * 设置按钮弹起态皮肤
 		 */		
 		public set upSkin(value:egret.Texture){
-            //this._useSource = false;
 			if(!this.isStateExist(Button.STATE_UP)){
 				this.stateArray.push(Button.STATE_UP);
 			}
-			//if(value != null){
-			//	this._width = value.width;
-			//	this._height = value.height;
-			//}
 			this._textureDict[Button.STATE_UP] = value;
 			this.invalidate();
 		}
@@ -377,7 +466,6 @@ module easy {
 		 * 设置按钮悬停态皮肤
 		 */		
 		public set overSkin(value:egret.Texture){
-            //this._useSource = false;
 			if(!this.isStateExist(Button.STATE_OVER)){
 				this.stateArray.push(Button.STATE_OVER);
 			}
@@ -391,7 +479,6 @@ module easy {
 		 * 设置按钮按下态皮肤
 		 */	
 		public set downSkin(value:egret.Texture){
-            //this._useSource = false;
 			if(!this.isStateExist(Button.STATE_DOWN)){
 				this.stateArray.push(Button.STATE_DOWN);
 			}
@@ -405,7 +492,6 @@ module easy {
 		 * 设置按钮禁用态皮肤
 		 */	
 		public set disableSkin(value:egret.Texture){
-            //this._useSource = false;
 			if(!this.isStateExist(Button.STATE_DISABLE)){
 				this.stateArray.push(Button.STATE_DISABLE);
 			}
@@ -445,7 +531,7 @@ module easy {
             this._selected = value;
             this._currentState = (this._selected?Button.STATE_DOWN:Button.STATE_UP);
             //if (this._data)console.log("button data=" + this._data.id + ", selected=" + this._selected);
-            if (this._selected) {
+            if (this._selected && StringUtil.isUsage(this._toggleGroup)) {
                 var myevent:MyEvent = MyEvent.getEvent(Button.TOGGLE_PREFIX + this._toggleGroup);
                 myevent.addItem("caller", this);
                 myevent.addItem("group", this._toggleGroup);
@@ -468,7 +554,7 @@ module easy {
             //this.stateArray.length = 0;
             switch(value) {
                 case 1:
-        			this.stateArray = [Button.STATE_UP];
+        			this.stateArray = [Button.STATE_UP];//一态的时候，第二态用第一态的资源 但是alpha 为0.8 scale为0.9
                     break;
                 case 2:
         			this.stateArray = [Button.STATE_UP, Button.STATE_DOWN];
@@ -486,19 +572,6 @@ module easy {
 		public get statesLength():number{
 			return this.stateArray.length;
 		}
-		///**
-		// * Sets/gets the enable of the bitmap's scale.
-		// */
-		//public get scaleEnable():boolean{
-		//	return this._scaleEnable;
-		//}
-		//
-		//public set scaleEnable(value:boolean){
-         //   if (this._scaleEnable != value) {
-    		//	this._scaleEnable = value;
-    		//	this.invalidate();
-         //   }
-		//}
 		/**
 		 * Sets the bitmapData of the bitmap.
 		 */
@@ -596,14 +669,14 @@ module easy {
          * false:根据按钮本身的宽和高设置材质的宽高
          * @param value
          */
-		public set fixTextureSize(value:boolean){
-            if (this._fixTextureSize != value) {
-    			this._fixTextureSize = value;
+		public set autoSize(value:boolean){
+            if (this._autoSize != value) {
+    			this._autoSize = value;
     			this.invalidate();
             }
 		}
-		public get fixTextureSize():boolean{
-			return this.fixTextureSize;
+		public get autoSize():boolean{
+			return this._autoSize;
 		}
 
         public set toggleGroup(value:string){
@@ -626,6 +699,32 @@ module easy {
                 this._currentState = Button.STATE_UP;
                 this.invalidate();
             }
+        }
+        public setSize(w:number, h:number):void {
+            super.setSize(w,h);
+            this.autoSize = false;
+        }
+
+        /**
+         * 初始化声音对象,并播放声音
+         */
+        private onPlaySound():void {
+            if (this._sound == null && easy.StringUtil.isUsage(this._soundName)) {
+                this._sound = RES.getRes(this._soundName);
+            }
+            if (this._sound){
+                this._sound.play();
+            }
+        }
+        /**
+         * 设置播放的声音名称
+         * @param value
+         */
+        public set sound(value:string){
+            this._soundName = value;
+        }
+        public get sound():string {
+            return this._soundName;
         }
     }
 }

@@ -49,7 +49,7 @@ module easy {
             this.addChild(this._itemContainer);
             this._itemContainer.setSize(this.width, this.height);
             this._defaultSkinColor = 0xe5f63f;
-            this._itemContainer.showDefaultSkin = false;
+            this._itemContainer.showBg = false;
             this._itemContainer.addEventListener(TouchEvent.TOUCH, this.onTouchEvent, this);
 		}
         public onTouchEvent(event:TouchEvent) : void {

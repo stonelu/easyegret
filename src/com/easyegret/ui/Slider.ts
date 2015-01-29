@@ -93,7 +93,7 @@ module easy {
             this._track.showDefaultSkin = false;
             this.trackClick = true;
 			this.addChild(this._track);
-            this.showDefaultSkin = false;
+            this.showBg = false;
 			
             this._handle = new Button();
             this._handle.coolDownEabled = false;
@@ -105,7 +105,7 @@ module easy {
             this.addChild(this._handle);
             this._handle.addEventListener(TouchEvent.TOUCH, this.onTouchHandleEvent, this);
             this.trackClick = true;
-            this.showDefaultSkin = false;
+            this.showBg = false;
 		}
         //导轨鼠标事件
         private onTouchTrackEvent(event:TouchEvent):void {
@@ -293,7 +293,7 @@ module easy {
             if (this._showDefaultSkin != value) {
     			if (this._track)this._track.showDefaultSkin = value;
                 if (this._handle)this._handle.showDefaultSkin = value;
-    			super.showDefaultSkin = value;
+    			super.showBg = value;
                 this.invalidate();
             }
 		}

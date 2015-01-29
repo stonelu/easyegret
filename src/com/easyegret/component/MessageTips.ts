@@ -33,7 +33,7 @@ module easy {
         private _dulation:number = 30;//停留时间
         private _mssageArr:Array<any> = [];//消息内容
 
-        private _labelArr:Array<ui.Label> = [];//当前正在显示的label
+        private _labelArr:Array<Label> = [];//当前正在显示的label
 
         private _showNext:boolean = false;//可以显示下一条
 
@@ -41,7 +41,7 @@ module easy {
             super();
         }
         public static getInstance():MessageTips{
-            if (MessageTips._instance == null) MessageTips._instance = new component.MessageTips();
+            if (MessageTips._instance == null) MessageTips._instance = new MessageTips();
             return MessageTips._instance;
         }
 
@@ -71,19 +71,20 @@ module easy {
                 HeartBeat.removeListener(this, this.onHeartBeat);
                 return;
             }
-            var label:ui.Label = null;
+            var label:Label = null;
             if(this._showNext && this._mssageArr.length > 0){//新文字,加入上浮
                 var item:Object = this._mssageArr.shift();
-                label =ObjectPool.getByClass(ui.Label);//从缓存中拿一个label
+                label =ObjectPool.getByClass(Label);//从缓存中拿一个label
                 label.text = item["msg"];
                 label.color = item["color"];
                 label._alpha = 0;
                 label.fontSize = 38;
+                label.showBg = false;
                 label.stroke = 1;
                 label.autoSize = true;
                 label.setData(0);//计数停留时间帧
                 label.strokeColor = 0x000000;
-                framework.ViewManager.currentView.addChild(label);
+                ViewManager.currentView.addChild(label);
                 label.getTextField()._setTextDirty();
                 label.draw();
                 if (item["x"] == 65535){
@@ -101,7 +102,7 @@ module easy {
             }
             for (var i = 0; i< this._labelArr.length; i++){
                 label = this._labelArr[i];
-                if (label._y ==  framework.ViewManager.currentView.cy/2 && label.getData() < this._dulation) {//停留
+                if (label._y ==  ViewManager.currentView.cy/2 && label.getData() < this._dulation) {//停留
                     label.setData(label.getData() + 1);
                 } else {
                     if (label.getData() < this._dulation) {
@@ -117,7 +118,7 @@ module easy {
                     label.removeFromParent();
                     ObjectPool.recycleClass(label);
                 }
-                if (i == (this._labelArr.length - 1) && (framework.ViewManager.currentView.cy - this._labelArr[i]._y) > 5){
+                if (i == (this._labelArr.length - 1) && (ViewManager.currentView.cy - this._labelArr[i]._y) > 5){
                     this._showNext = true;
                 }
             }

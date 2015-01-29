@@ -46,7 +46,7 @@ module easy {
 			this._label.x = 5;
 			this._label.y = 0;
 			this.addChild(this._label);
-			this._label.showDefaultSkin = false;
+			this._label.showBg = false;
 			this._label.draw();
 //			showDefaultSkin = false;
 		}
@@ -73,11 +73,11 @@ module easy {
 //    			setSize(100, 20);
 //            }
             if (this._mouseOver) {
-                this.defaultSkinColor = 0xffffff;
+                this.bgColor = 0xffffff;
                 this._label.color = Style.BUTTON_FACE;
             } else {
                 this._label.color = Style.LIST_ROLLOVER;
-                this.defaultSkinColor = this._defaultColor;
+                this.bgColor = this._defaultColor;
             }
             //trace(this._mouseOver);
 			super.draw();

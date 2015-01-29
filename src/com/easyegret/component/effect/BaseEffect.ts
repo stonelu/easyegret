@@ -25,53 +25,32 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 module easy {
-    export class MessageControler {
-        private static _handles:Array<IHandle> = [];
-        private static _eventHandles:Array<string> = [];
-
-        /**
-         * 添加数据处理的Handle
-         * 逻辑处理模块,需要添加Handle,以便方便的在view刷新前,有限得到数据,预先处理数据
-         * @param handle
-         */
-        public static addHandle(handle:IHandle):void {
-            if (handle != null)MessageControler._handles.push(handle);
+    export class BaseEffect implements IEffect{
+        public _outerTarget:ReceiveGroup = null;
+        public _enterTarget:ReceiveGroup = null;
+        public constructor() {
+            super();
         }
 
         /**
-         * 添加弱事件处理
-         * 只有注册的时间,当前的view才能收到
-         * @param eventName
+         * 准备数据,播放效果
          */
-        public static addEvent(eventName:string):void {
-            MessageControler._eventHandles.push(eventName);
+        public play():void {
+            this._enterTarget = ViewManager._waitChangeView;
+            this._outerTarget = ViewManager.currentView;
+            if (this._enterTarget == this._outerTarget)this._outerTarget = null;
+            this.onPlayEffect();
         }
 
-        /**
-         * MyEvent事件派发
-         * @param event
-         */
-        public static onEventData(event:MyEvent):void {
-            var i:number = 0;
-            for (i = 0; i < MessageControler._handles.length; i++) {
-                MessageControler._handles[i].receiveEvent(event);
-            }
-            if (MessageControler._eventHandles.indexOf(event.type) >= 0)ViewManager.receiveEvent(event);
+        public onPlayEffect():void {
+            if (this._outerTarget)this._outerTarget.outerTransition();
+            if (this._enterTarget)this._enterTarget.enterTransition();
         }
-
-        /**
-         * 协议事件派发
-         * @param pkt
-         */
-        public static receivePacket(pkt:Packet):void {
-            //console.log("MessageHandle onPacketData=" + egret.getQualifiedClassName(pkt));
-            //优先处理数据的handle
-            var i:number = 0;
-            for (i = 0; i < MessageControler._handles.length; i++) {
-                MessageControler._handles[i].receivePacket(pkt);
-            }
-            //界面刷新
-            ViewManager.receivePacket(pkt);
+        public onEffectComplete():void {
+            if (this._outerTarget)this._outerTarget.outerTransitionComplete();
+            if (this._enterTarget)this._enterTarget.enterTransitionComplete();
+            this._outerTarget = null;
+            this._enterTarget = null;
         }
     }
 }

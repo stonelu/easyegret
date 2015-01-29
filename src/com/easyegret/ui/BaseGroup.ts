@@ -51,10 +51,10 @@ module easy {
         public constructor() {
 			super();
 			this.addEventListener(egret.Event.ADDED_TO_STAGE, this.onAddToStage, this);
-        }
+		}
 		/**
 		 * 第一次加入场景的时候会运行该方法
-		 */  
+		 */
 		public onAddToStage(event:Event):void {
 			this.removeEventListener(egret.Event.ADDED_TO_STAGE, this.onAddToStage, this);
 			this.createChildren();//先创建
@@ -75,6 +75,8 @@ module easy {
          */
         public createChildren():void {
 			this.touchEnabled = false;//默认不接受事件
+            this.width = 100;
+            this.height = 100;
         }
 		private invalidatePosition():void{
 			//SystemHeartBeat.addEventListener(this.onHeartBeatInvalidate, 1, 1);
@@ -91,7 +93,7 @@ module easy {
 		}
         public get width():number {
 			//console.log("@@@BaseGroup =" + this._explicitWidth);
-			if (this._explicitWidth == NaN) return 0;
+			if (this._explicitWidth == NaN || this._explicitWidth == undefined) return 0;
             return this._explicitWidth;
 		}
 		public set height(h:number){
@@ -100,7 +102,7 @@ module easy {
 			}
 		}
 		public get height():number {
-			if (this._explicitHeight == NaN) return 0;
+			if (this._explicitHeight == NaN || this._explicitHeight == undefined) return 0;
 			return this._explicitHeight;
         }
 

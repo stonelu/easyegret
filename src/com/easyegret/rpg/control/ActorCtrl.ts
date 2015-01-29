@@ -133,10 +133,14 @@ module easy.rpg {
                 var texture = spriteSheet.getTexture(key + "_" + this.directionTexture + "_" + this._actorTextureIndex);
                 if (texture && this._actor._bitmapActor) {
                     this._actor._bitmapActor.texture = texture;
+                    //this._actor._bitmapActor.x = jsonDirectionData.x + jsonDirectionData.offsetx;
+                    //this._actor._bitmapActor.y = jsonDirectionData.offsety;
                     if (this.gameData._directionMirror) {
                         this._actor._bitmapActor.scaleX = -1;
+                        this._actor._bitmapActor.x = -jsonDirectionData.offsetx;
                     } else {
                         this._actor._bitmapActor.scaleX = 1;
+                        //this._actor._bitmapActor.x = - jsonDirectionData.offsetx;
                     }
                 }
 
