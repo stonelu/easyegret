@@ -35,7 +35,7 @@ module easy {
          * @param handle
          */
         public static addHandle(handle:IHandle):void {
-            if (handle != null)MessageControler._handles.push(handle);
+            if (handle != null && MessageControler._handles.indexOf(handle) < 0 )MessageControler._handles.push(handle);
         }
 
         /**
@@ -44,19 +44,22 @@ module easy {
          * @param eventName
          */
         public static addEvent(eventName:string):void {
-            MessageControler._eventHandles.push(eventName);
+            if (MessageControler._eventHandles.indexOf(eventName) < 0) MessageControler._eventHandles.push(eventName);
         }
 
         /**
          * MyEvent事件派发
          * @param event
          */
-        public static onEventData(event:MyEvent):void {
-            var i:number = 0;
-            for (i = 0; i < MessageControler._handles.length; i++) {
-                MessageControler._handles[i].receiveEvent(event);
+        public static receiveEvent(event:MyEvent):void {
+            //console.log("MessageControl onEventData=" + event.type)
+            if (MessageControler._eventHandles.indexOf(event.type) >= 0){
+                ViewManager.receiveEvent(event);
+                var i:number = 0;
+                for (i = 0; i < MessageControler._handles.length; i++) {
+                    MessageControler._handles[i].receiveEvent(event);
+                }
             }
-            if (MessageControler._eventHandles.indexOf(event.type) >= 0)ViewManager.receiveEvent(event);
         }
 
         /**

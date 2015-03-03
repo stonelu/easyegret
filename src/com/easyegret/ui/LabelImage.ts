@@ -285,10 +285,14 @@ module easy {
             this._labelImg = lableImg;
             this._xOld = this._labelImg.x;
             this._yOld = this._labelImg.y;
-            console.log("x=" + this._xOld + ", y=" + this._yOld)
+            //console.log("x=" + this._xOld + ", y=" + this._yOld)
         }
         public setText(str:string){
             //console.log("目标str=" +str);
+            if (this._rollingText.length > 0){
+                this._labelImg.text = this._rollingText[this._rollingText.length -1];
+            }
+            this._rollingText.length = 0;
             this._typeStr.length = 0;
             var tempSpliteStr:Array<string> = [];
             if (easy.StringUtil.isUsage(str)){
@@ -445,7 +449,7 @@ module easy {
             } else if (tempStep < 3500) {//70次
                 value = 50;
             } else {
-                value = 60;
+                value = Math.floor(tempStep/(Math.round(tempStep/1000)*10 + 90));
             }
             if (num1 < num2){
                 value = -value;

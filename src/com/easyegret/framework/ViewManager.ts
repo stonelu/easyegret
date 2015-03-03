@@ -57,7 +57,7 @@ module easy{
             }
             if (ViewManager._waitChangeView == ViewManager.currentView){
                 ViewManager._waitChangeView = null;
-                console.log("相同的View change clz=" + key);
+                //console.log("相同的View change clz=" + key);
                 return;
             }
             //检测素材资源是否准备完成,没完成则等待进入

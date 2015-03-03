@@ -110,7 +110,9 @@ module easy {
                 ObjectPool._dataPool[name] = [];
             }
             if (item.hasOwnProperty("destroy"))item.destroy();
-            ObjectPool._dataPool[name].push(item);
+            if (ObjectPool._dataPool[name].indexOf(item) < 0) {
+                ObjectPool._dataPool[name].push(item);
+            }
         }
 
         /**

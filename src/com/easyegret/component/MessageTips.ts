@@ -49,8 +49,8 @@ module easy {
          * 显示弹出的文字内容
          * @param msg
          */
-        public static showMessage(msg:string):void {
-            MessageTips.getInstance().showMsg(msg);
+        public static showMessage(msg:string, delay:number = 0, color:number = 0xfff666, x:number = 65535, y:number= 65535):void {
+            MessageTips.getInstance().showMsg(msg, delay, color, x, y);
         }
 
         /**
@@ -58,10 +58,10 @@ module easy {
          * @param msg
          * @param color
          */
-        public showMsg(msg:string, color:number = 0xfff666, x:number = 65535, y:number= 65535):void {
+        public showMsg(msg:string, delay:number = 0, color:number = 0xfff666, x:number = 65535, y:number= 65535):void {
             HeartBeat.addListener(this, this.onHeartBeat);
             if (this._labelArr.length == 0) this._showNext = true;
-            this._mssageArr.push({msg:msg, color:color, x:x, y:y});
+            this._mssageArr.push({msg:msg, color:color, x:x, y:y, delay:delay});
         }
         /**
          * 呼吸计算位移
@@ -77,14 +77,20 @@ module easy {
                 label =ObjectPool.getByClass(Label);//从缓存中拿一个label
                 label.text = item["msg"];
                 label.color = item["color"];
+                label.bold = true;
+                label.stroke = 1;
+                label.strokeColor = 0x000000;
                 label._alpha = 0;
-                label.fontSize = 38;
+                label.fontSize = 40;
                 label.showBg = false;
                 label.stroke = 1;
                 label.autoSize = true;
-                label.setData(0);//计数停留时间帧
-                label.strokeColor = 0x000000;
-                ViewManager.currentView.addChild(label);
+                if (item["delay"] > 0) {
+                    label.setData(-item["delay"]);//计数停留时间帧
+                } else {
+                    label.setData(0);//计数停留时间帧
+                }
+                easy.GlobalSetting.STAGE.addChild(label);
                 label.getTextField()._setTextDirty();
                 label.draw();
                 if (item["x"] == 65535){
@@ -102,6 +108,10 @@ module easy {
             }
             for (var i = 0; i< this._labelArr.length; i++){
                 label = this._labelArr[i];
+                if (label.getData() < 0) {
+                    label.setData(label.getData() + 1);
+                    continue;
+                }
                 if (label._y ==  ViewManager.currentView.cy/2 && label.getData() < this._dulation) {//停留
                     label.setData(label.getData() + 1);
                 } else {

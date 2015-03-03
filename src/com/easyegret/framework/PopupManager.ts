@@ -44,7 +44,7 @@ module easy{
          * 弹出win显示
          * @param clz
          */
-        public static show(clz:any):any {
+        public static show(clz:any, data:any = null):any {
             var key:string = egret.getQualifiedClassName(clz);
             console.log("Win change clz=" + key);
             if (PopupManager._instanceDict.hasOwnProperty(key)){
@@ -85,6 +85,7 @@ module easy{
             ViewManager.mainContainer.touchChildren = false;
             GlobalSetting.STAGE.addChild(PopupManager._mask);
             if (PopupManager.waitShowWin){//未保证view创建子元素,首先要加入场景中触发创建
+                PopupManager.waitShowWin.data = data;
                 PopupManager.waitShowWin.visible = false;
                 GlobalSetting.STAGE.addChildAt(PopupManager.waitShowWin, 0);
             }
@@ -134,6 +135,18 @@ module easy{
             if (PopupManager._mask && PopupManager._mask.parent) PopupManager._mask.parent.removeChild(PopupManager._mask);
             ViewManager.mainContainer.touchEnabled = true;
             ViewManager.mainContainer.touchChildren = true;
+        }
+
+        /**
+         * 根据类名,获取窗口实例
+         * @param clz
+         */
+        public static getWinInstance(clz:any):any{
+            var key:string = egret.getQualifiedClassName(clz);
+            if (PopupManager._instanceDict.hasOwnProperty(key)){
+                return PopupManager._instanceDict[key];
+            }
+            return null;
         }
 
         private static onEventMask(event:egret.TouchEvent){

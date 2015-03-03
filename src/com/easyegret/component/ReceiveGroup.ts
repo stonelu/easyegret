@@ -76,6 +76,7 @@ module easy{
          * @param func  对应的call back function,不包含onEvent前缀
          */
         public addHandleEvent(type:string, funcName:string):void {
+            //console.log("ReceiveGroup this=" + egret.getQualifiedClassName(this) + ", addHandleEvent=" + type + ", funcName=" + funcName);
             this.METHOD_DEF[type] = funcName;
         }
 
@@ -88,11 +89,21 @@ module easy{
             this.METHOD_DEF["" + msgId] = funcName;
         }
 
+        /**
+         * 收到弱协议通知
+         * @param packet
+         */
         public receivePacket(packet:Packet):void {
-            if (this.METHOD_DEF.hasOwnProperty("" + packet.header.messageId))this["onPacket" + this.METHOD_DEF[packet.header.messageId]].call(this, packet);
+            if (this.METHOD_DEF["" + packet.header.messageId])this["onPacket" + this.METHOD_DEF[packet.header.messageId]].call(this, packet);
         }
+
+        /**
+         * 收到界面弱事件通知
+         * @param event
+         */
         public receiveEvent(event:MyEvent):void {
-            if (this.METHOD_DEF.hasOwnProperty(event.type)) this["onEvent" + this.METHOD_DEF[event.type]].call(this, event);
+            //console.log("ReceiveGroup this=" + egret.getQualifiedClassName(this) + ", receiveEvent=" + event.type + ", isHas=" + this.METHOD_DEF[event.type]);
+            if (this.METHOD_DEF[event.type]) this["onEvent" + this.METHOD_DEF[event.type]].call(this, event);
         }
         /**
          * 初始化主场景的组件
@@ -102,6 +113,7 @@ module easy{
         public createChildren():void {
             super.createChildren();
             this.touchEnabled = true;//默认不接受事件
+            this.showBg = false;
         }
         /**
          * 进入的逻辑
@@ -109,6 +121,14 @@ module easy{
          */
         public enter():void {
             //console.log("@@enter=" + egret.getQualifiedClassName(this))
+            if (this._ui){
+                //检测模板的enter
+                for (var prop in this._ui){
+                    if (this._ui[prop] instanceof Template && this._ui[prop] != this){
+                        this._ui[prop].enter();
+                    }
+                }
+            }
             this.enterTransition();
         }
 
@@ -138,6 +158,14 @@ module easy{
          */
         public outer():void {
             //console.log("@@outer=" + egret.getQualifiedClassName(this))
+            if (this._ui){
+                //检测模板的enter
+                for (var prop in this._ui){
+                    if (this._ui[prop] instanceof Template && this._ui[prop] != this){
+                        this._ui[prop].outer();
+                    }
+                }
+            }
             this.outerTransition();
         }
         /**

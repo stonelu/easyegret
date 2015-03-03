@@ -45,7 +45,7 @@ module easy {
         private _imgDisplay:egret.Bitmap = null;//显示按钮up用的image
 
         private _imgLabel:egret.Bitmap = null;//显示文字图片的image
-        private _imgIcon:egret.Bitmap = null;//显示图标用的image
+        public _imgIcon:egret.Bitmap = null;//显示图标用的image
         
         private _initDisplayData:boolean = false;//是否初始化显示对象
         public _selected:boolean = false;//选择时为ture
@@ -77,7 +77,6 @@ module easy {
 
         private _hasInvalidate:boolean = false;//是否下一帧重绘
 
-        private _scaleEnable:boolean = false;
         private _scale9GridEnable:boolean = false;
         private _scale9GridRect:egret.Rectangle = null;//九宫拉伸的尺寸
         private _fillMode:string = "scale";//scale, repeat.
@@ -188,20 +187,6 @@ module easy {
         public set fillMode(value:string){
             if (this._fillMode != value){
                 this._fillMode = value;
-                this.invalidate();
-            }
-        }
-
-        /**
-         *  Sets/gets the common scaleEnable of the bitmap.
-         */
-        public get scaleEnable():boolean{
-            return this._scaleEnable;
-        }
-
-        public set scaleEnable(value:boolean){
-            if (this._scaleEnable != value) {
-                this._scaleEnable = value;
                 this.invalidate();
             }
         }
@@ -415,31 +400,37 @@ module easy {
             if (this._texture){
                 //console.log("splitTextureSource texture.w=" + this._texture._sourceWidth + ", h=" + this._texture._sourceHeight + ", name=" + this.name)
                 this._initDisplayData = true;
-                var i:number = 0;
-                var xOffset:number = 0;//this._texture._bitmapX;
-                var yOffset:number = 0;//this._texture._bitmapY;
                 var splietWidth:number = 0;
                 var splietHeight:number = 0;
                 var textureWidth:number = this._texture._bitmapWidth;
                 if (textureWidth == 0) textureWidth = this._texture._sourceWidth;
                 var textureHeight:number = this._texture._bitmapHeight;
                 if (textureHeight == 0) textureHeight = this._texture._sourceHeight;
-                if (this._verticalSplit){
+                if (this.stateArray.length == 1){
                     splietWidth = textureWidth;
-                    splietHeight = textureHeight/this.statesLength;
-                } else {
-                    splietWidth = textureWidth/this.statesLength;
                     splietHeight = textureHeight;
-                }
-                //console.log("splitTextureSource _bitmapWidth=" + this._texture._bitmapWidth + ", _bitmapHeight=" + this._texture._bitmapHeight + ", this.stateArray.length=" + this.stateArray.length)
-                //console.log("splitTextureSource splietWidth=" + splietWidth + ", splietHeight=" + splietHeight + ", this.stateArray.length=" + this.stateArray.length)
-                //console.log("splitTextureSource xOffset=" + xOffset + ", yOffset=" + yOffset + ", bitmapX=" + this._texture._bitmapX + ", bitmapY=" + this._texture._bitmapY)
-                var spriteSheet:egret.SpriteSheet = new egret.SpriteSheet(this._texture);
-                for (i = 0; i < this.stateArray.length; i++) {
-                    if (this._verticalSplit) {
-                        this._textureDict[this.stateArray[i]] = spriteSheet.createTexture(this.name + Math.round(Math.random() * 999999) + "_" + this.stateArray[i], xOffset, i * splietHeight + yOffset, splietWidth, splietHeight);
+                    this._textureDict[this.stateArray[0]] = this._texture;
+                } else {
+                    var i:number = 0;
+                    var xOffset:number = 0;//this._texture._bitmapX;
+                    var yOffset:number = 0;//this._texture._bitmapY;
+                    if (this._verticalSplit){
+                        splietWidth = textureWidth;
+                        splietHeight = textureHeight/this.statesLength;
                     } else {
-                        this._textureDict[this.stateArray[i]] = spriteSheet.createTexture(this.name + Math.round(Math.random() * 999999) + "_" + this.stateArray[i], i * splietWidth + xOffset, yOffset, splietWidth, splietHeight);
+                        splietWidth = textureWidth/this.statesLength;
+                        splietHeight = textureHeight;
+                    }
+                    //console.log("splitTextureSource _bitmapWidth=" + this._texture._bitmapWidth + ", _bitmapHeight=" + this._texture._bitmapHeight + ", this.stateArray.length=" + this.stateArray.length)
+                    //console.log("splitTextureSource splietWidth=" + splietWidth + ", splietHeight=" + splietHeight + ", this.stateArray.length=" + this.stateArray.length)
+                    //console.log("splitTextureSource xOffset=" + xOffset + ", yOffset=" + yOffset + ", bitmapX=" + this._texture._bitmapX + ", bitmapY=" + this._texture._bitmapY)
+                    var spriteSheet:egret.SpriteSheet = new egret.SpriteSheet(this._texture);
+                    for (i = 0; i < this.stateArray.length; i++) {
+                        if (this._verticalSplit) {
+                            this._textureDict[this.stateArray[i]] = spriteSheet.createTexture(this.name + Math.round(Math.random() * 999999) + "_" + this.stateArray[i], xOffset, i * splietHeight + yOffset, splietWidth, splietHeight);
+                        } else {
+                            this._textureDict[this.stateArray[i]] = spriteSheet.createTexture(this.name + Math.round(Math.random() * 999999) + "_" + this.stateArray[i], i * splietWidth + xOffset, yOffset, splietWidth, splietHeight);
+                        }
                     }
                 }
 

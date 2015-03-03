@@ -43,7 +43,7 @@ module easy {
         public outer():void {
             super.outer();
             PopupManager.waitWinDoEnter();
-            console.log("@@LoadingWinUI outer")
+            //console.log("@@LoadingWinUI outer")
         }
     }
 }

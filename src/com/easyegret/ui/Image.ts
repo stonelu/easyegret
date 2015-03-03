@@ -28,7 +28,7 @@ module easy {
     export class Image extends BaseGroup{
         private _bitmap:egret.Bitmap = null;
         private _texture:egret.Texture = null;
-        private _scaleEnable:boolean = true;
+        private _autoSize:boolean = true;
         private _scale9GridEnable:boolean = false;
         private _scale9GridRect:egret.Rectangle = null;//九宫拉伸的尺寸
         private _fillMode:string = "scale";//scale, repeat.
@@ -71,14 +71,14 @@ module easy {
         /**
          *  Sets/gets the common scaleEnable of the bitmap.
          */
-        public get scaleEnable():boolean{
-            return this._scaleEnable;
+        public get autoSize():boolean{
+            return this._autoSize;
         }
 
-        public set scaleEnable(value:boolean){
-            if (this._scaleEnable != value) {
-                this._scaleEnable = value;
-                if (!this._scaleEnable) {
+        public set autoSize(value:boolean){
+            if (this._autoSize != value) {
+                this._autoSize = value;
+                if (!this._autoSize) {
                     this.scaleX = 1;
                     this.scaleY = 1;
                 }
@@ -229,7 +229,7 @@ module easy {
                 this._bitmap.height = this.height;
             } else {
                 this._bitmap.scale9Grid = null;
-                if (!this._scale9GridEnable && this._scaleEnable) {
+                if (!this._scale9GridEnable && this._autoSize) {
                     this.scaleX = this.width/this._bitmap.texture._bitmapWidth;
                     this.scaleY = this.height/this._bitmap.texture._bitmapHeight;
                 } else if (this._texture){

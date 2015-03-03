@@ -25,9 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 module easy {
-    export class LoadingBaseUI extends Group {
-
-        public textField:egret.TextField = null;
+    export class LoadingBaseUI extends BaseGroup {
         private _numTotalFile:number = 0;//总文件
         private _resFileArr:Array<string> = [];//
         private _resFileArrOrg:Array<string> = [];//
@@ -36,19 +34,15 @@ module easy {
         private _numDownloadedFile:number = 0;//已下载文件数
         private _resGroup:Array<string> = null;
 
-        private _loadingTexture:Array<LoadingItemUI> = [];//loading显示的材质
-        private _gridWidth:number = 60;
-        private _gridHeight:number = 60;
-        private _gridGap:number = 2;
-        private _loadingPos:Array<any> = [];//显示坐标
-        private _loadingTextureIndex:number = 0;
-        private _loadingTextureCount:number = 30;
-        private _loadingTextureNum:number = 0;
-        private _loadingPosIndex:number = 0;
-        private _currentGraphicsItem:LoadingItemUI = null;
+        private _gridWidth:number = 256;
+        private _gridHeight:number = 256;
+
         public _currentDisplayObject:easy.ReceiveGroup = null;
 
         public _loadingTextArr:Array<string> = ["e", "a", "s", "y", "u", "i"];//lenght=6
+
+        private _bmpBg:egret.Bitmap = null;//bg
+        private _bmpLogo:egret.Bitmap = null;//logo
 
         public constructor() {
             super();
@@ -56,48 +50,23 @@ module easy {
 
         public createChildren():void {
             super.createChildren();
-            this.showBg = false;
-            this.setSize(this._gridWidth + 10, this._gridHeight + 10);
+            this.setSize(this._gridWidth, this._gridHeight);
 
-            this.bgColor = 0x7d2688;
+            this._bmpBg = new egret.Bitmap();
+            this._bmpBg.anchorX = 0.5;
+            this._bmpBg.anchorY = 0.5;
+            this._bmpBg.texture = RES.getRes("loading_view_bg");
+            this.addChild(this._bmpBg);
 
-            this.textField = new egret.TextField();
-            this.addChild(this.textField);
-            this.textField.width = 250;
-            this.textField.height = 30;
-            this.textField.textAlign = "center";
-            this.textField.y = this.height + this.textField.height + 20;
-            this.textField.x = (this.width - this.textField.width)/2;
-            this.anchorX = 0.5;
-            this.anchorY = 0.5;
-
-            //创建loadign材质
-            this._loadingTexture.push(new LoadingItemUI(0xff333, 0xfff666, this._loadingTextArr[0], this._gridWidth, this._gridHeight));
-            this._loadingTexture.push(new LoadingItemUI(0x3f6f4, 0xfff666, this._loadingTextArr[1], this._gridWidth, this._gridHeight));
-            this._loadingTexture.push(new LoadingItemUI(0xf3f33, 0xfff666, this._loadingTextArr[2], this._gridWidth, this._gridHeight));
-            this._loadingTexture.push(new LoadingItemUI(0xf33f3, 0xfff666, this._loadingTextArr[3], this._gridWidth, this._gridHeight));
-            this._loadingTexture.push(new LoadingItemUI(0x3f6f4, 0xfff666, this._loadingTextArr[4], this._gridWidth, this._gridHeight));
-            this._loadingTexture.push(new LoadingItemUI(0xf3f33, 0xfff666, this._loadingTextArr[5], this._gridWidth, this._gridHeight));
-            //设置坐标
-            this._loadingPos = [//显示坐标
-                    {x:this.width/2 - this._gridWidth - this._gridGap, y:this.height/2 - this._gridHeight - this._gridGap},
-                    {x:this.width/2  + this._gridGap, y:this.height/2 - this._gridHeight - this._gridGap},
-                    {x:this.width/2 + this._gridGap, y:this.height/2 + this._gridGap},
-                    {x:this.width/2 - this._gridWidth - this._gridGap, y:this.height/2 + this._gridGap}
-                ];
-        }
-        private getShapeTexture(colorBg:number, colorLine:number):egret.Shape{
-            var shape:egret.Shape = new egret.Shape();
-            shape.graphics.beginFill(colorBg);
-            shape.graphics.drawRoundRect(0, 0 , this._gridWidth, this._gridHeight, 4, 4);
-            shape.graphics.endFill();
-            shape.graphics.lineStyle(2, colorLine);
-            shape.graphics.drawRoundRect(0, 0 , this._gridWidth, this._gridHeight, 4, 4);
-            return shape;
+            this._bmpLogo = new egret.Bitmap();
+            this._bmpLogo.anchorX = 0.5;
+            this._bmpLogo.anchorY = 0.5;
+            this._bmpLogo.texture = RES.getRes("loading_view");
+            this.addChild(this._bmpLogo);
         }
 
         public setProgress(current, total):void {
-            this.textField.text = "加载中..." + current + "/" + total;
+            //this.textField.text = "加载中..." + current + "/" + total;
         }
 
         /**
@@ -133,11 +102,10 @@ module easy {
                     //console.log("@@LoadingBaseUI Enter _resGroup=" + this._resGroup)
                 }
             }
-
+            //this._bmpLogo.rotation = 0;
+            this._bmpBg.rotation = 0;
+            this.alpha = 0;
             //显示loading图像
-            this._loadingTextureIndex = 0;
-            this._loadingPosIndex = 0;
-            this._loadingTextureNum = 0;
             HeartBeat.addListener(this, this.onShowLoadingGraphics);
         }
 
@@ -146,40 +114,29 @@ module easy {
          */
         public outer():void {
             //console.log("@@LoadingBaseUI outer!")
-            this.removeFromParent();
             HeartBeat.removeListener(this, this.onShowLoadingGraphics);
+            HeartBeat.addListener(this, this.onOuterEffect);
             if(this._currentDisplayObject){
                 this._currentDisplayObject.validateNow();
             }
             this._currentDisplayObject = null;
+        }
+        private onOuterEffect():void {
+            if (this.alpha > 0){
+                this.alpha -= 0.02;
+            } else {
+                HeartBeat.removeListener(this, this.onOuterEffect);
+                this.removeFromParent();
+            }
         }
 
         /**
          * 显示下载进度的图形
          */
         public onShowLoadingGraphics():void {
-            this._loadingTextureNum ++;
-            //console.log("onShowLoadingGraphics=" + this._loadingTextureNum)
-            if (this._loadingTextureNum == this._loadingTextureCount){
-                this._loadingTextureNum = 0;
-                if (this._currentGraphicsItem) {
-                    this._currentGraphicsItem.removeFromParent();
-                }
-                this._currentGraphicsItem = this._loadingTexture[this._loadingTextureIndex];
-                this._currentGraphicsItem.x = this._loadingPos[this._loadingPosIndex].x;
-                this._currentGraphicsItem.y = this._loadingPos[this._loadingPosIndex].y;
-                this.addChild(this._currentGraphicsItem);
-                //console.log("this._currentGraphicsItem=" + this._currentGraphicsItem)
-
-                this._loadingTextureIndex ++;
-                if (this._loadingTextureIndex == this._loadingTexture.length){
-                    this._loadingTextureIndex = 0;
-                }
-                this._loadingPosIndex ++;
-                if (this._loadingPosIndex == this._loadingPos.length){
-                    this._loadingPosIndex = 0;
-                }
-            }
+            if (this.alpha < 1) this.alpha += 0.05;
+            this._bmpBg.rotation += 2;
+            //this._bmpLogo.rotation -= 2;
         }
 
         /**
@@ -242,51 +199,7 @@ module easy {
          * preload资源组加载进度
          */
         private onResourceProgress(event:RES.ResourceEvent):void {
-            if (this.textField)this.textField.text = "加载中..." + event.itemsLoaded + "/" + event.itemsTotal;
-        }
-    }
-    export class LoadingItemUI extends BaseGroup {
-        private _colorBg:number = 0;
-        private _colorLine:number = 0;
-        private _title:string = null;
-        private _w:number = 0;
-        private _h:number = 0;
-        private _shape:egret.Shape = null;
-        private _lableTitle:easy.Label = null;
-        public constructor(colorBg:number, colorLine:number, str:string, w:number, h:number) {
-            super();
-            this._colorBg = colorBg;
-            this._colorLine = colorLine;
-            this._title = str;
-            this._w = w;
-            this._h = h;
-        }
-
-        public createChildren():void {
-            super.createChildren();
-            this.setSize(this._w, this._h);
-            this._shape = new egret.Shape();
-            this._shape.graphics.beginFill(this._colorBg);
-            this._shape.graphics.drawRoundRect(0, 0 , this._w, this._h, 4, 4);
-            this._shape.graphics.endFill();
-            this._shape.graphics.lineStyle(2, this._colorLine);
-            this._shape.graphics.drawRoundRect(0, 0 , this._w, this._h, 4, 4);
-            this.addChild(this._shape);
-
-            this._lableTitle = new easy.Label();
-            this._lableTitle.autoSize = true;
-            //this._lableTitle.setSize(this._w, this._h);
-            this._lableTitle.hAlign = egret.HorizontalAlign.CENTER;
-            //this._lableTitle.vAlign = egret.VerticalAlign.MIDDLE;
-            this._lableTitle.text = this._title;
-            this._lableTitle.color = 0xffffff;
-            this._lableTitle.stroke = 1;
-            this._lableTitle.strokeColor = 0x000000;
-            this._lableTitle.fontSize = 60;
-            this._lableTitle.x = 15;
-            this._lableTitle.y = -8;
-            this._lableTitle.showBg = false;
-            this.addChild(this._lableTitle);
+            //if (this.textField)this.textField.text = "加载中..." + event.itemsLoaded + "/" + event.itemsTotal;
         }
     }
 }

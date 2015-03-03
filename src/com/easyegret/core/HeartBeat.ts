@@ -60,6 +60,7 @@ module easy {
                 item = HeartBeat._listeners[i];
                 item.index++;
                 if (item.del) {//上一帧已标记要要删除,本帧删除之
+                    //console.log("HeartBeat Del Func=" + item.func + ", clz=" + egret.getQualifiedClassName(item.thisArg));
                     HeartBeat._listeners.splice(i, 1);
                     ObjectPool.recycleClass(item)
                     continue;
@@ -113,6 +114,7 @@ module easy {
          */
         public static addListener(thisArg:any, respone:Function, heartRrate:number = 1, repeat:number = -1, delay:number = 0, params:Array<any> = null):boolean {
             if (respone == null || HeartBeat.isContainerListener(thisArg, respone)) return false;//同一个func防止重复添加
+            //console.log("HeartBeat ADD Func=" + respone + ", clz=" + egret.getQualifiedClassName(thisArg));
             var item:BeatItem = ObjectPool.getByClass(BeatItem);
             //if (GlobalSetting.DEV_MODEL) item.traceMsg = new Error().getStackTrace();//调试信息追踪
             item.setData(thisArg, respone, heartRrate, repeat, delay, params);

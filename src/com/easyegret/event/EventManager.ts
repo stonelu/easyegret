@@ -228,6 +228,7 @@ module easy {
         private static onFiredispatchEvent():void {
             if(EventManager.eventSendCacheList.length > 0 ){
                 var e:MyEvent = EventManager.eventSendCacheList.shift();
+                MessageControler.receiveEvent(e);
                 var listenerList:Array<any> = EventManager.commEventList[e.type];
                 if (listenerList != null) {
                     for (var i:number = listenerList.length - 1; i >= 0; i--) {

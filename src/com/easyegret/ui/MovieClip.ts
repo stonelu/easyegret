@@ -53,7 +53,7 @@ module easy {
             super.createChildren();
             this._imgDisplay = new easy.Image();
             this.addChild(this._imgDisplay);
-            this._imgDisplay.scaleEnable = false;
+            this._imgDisplay.autoSize = false;
         }
 
         /**
@@ -130,6 +130,10 @@ module easy {
          * 变更材质
          */
         private onChangeTexture():void {
+            if (!this.parent) {
+                this.stop();
+                return;
+            }
             this._numFrammeCount ++;
             if (this._numFrammeCount >= this._fps && this._textures){
                 this._imgDisplay.texture = this._textures[this._numFrameIndex];
