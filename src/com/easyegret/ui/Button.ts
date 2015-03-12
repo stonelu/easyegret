@@ -141,11 +141,13 @@ module easy {
                         this.selected = !this._selected;
                     }
                     this.onPlaySound();
+                    if (GlobalSetting.REPORT_UI) Report.send({"name": this.name, "type":"button", "action":"click", "data":this.data}, "/ui");
                    // console.log("Button _toggleGroup=" + this._toggleGroup + ", _selected=" + this._selected);
                 } else {
                     if (event.type == egret.TouchEvent.TOUCH_BEGIN){
                         this._currentState = Button.STATE_DOWN;
                         this.onPlaySound();
+                        if (GlobalSetting.REPORT_UI) Report.send({"name": this.name, "type":"button", "action":"click", "data":this.data}, "/ui");
                     } else if (event.type == egret.TouchEvent.TOUCH_END) {
                         this._currentState = Button.STATE_UP;
                     } else if (event.type == egret.TouchEvent.TOUCH_MOVE) {

@@ -78,6 +78,7 @@ module easy {
             } else if(touch.phase == TouchPhase.MOVED) {
             } else if(touch.phase == TouchPhase.ENDED) {
                 this.selected = !this._selected;
+                if (GlobalSetting.REPORT_UI) Report.send({"name": this.name, "type":"checkbox", "action":"click", "data":this.data}, "/ui");
             }
             this.invalidate();
         }

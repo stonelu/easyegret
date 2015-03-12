@@ -122,11 +122,13 @@ module easy {
             this._currentDisplayObject = null;
         }
         private onOuterEffect():void {
+            //console.log("this.alpha=" + this.alpha)
             if (this.alpha > 0){
-                this.alpha -= 0.02;
+                this.alpha -= 0.05;
+                if (this.alpha < 0) this.alpha = 0;
             } else {
-                HeartBeat.removeListener(this, this.onOuterEffect);
                 this.removeFromParent();
+                HeartBeat.removeListener(this, this.onOuterEffect);
             }
         }
 

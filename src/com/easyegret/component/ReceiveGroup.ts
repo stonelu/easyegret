@@ -77,6 +77,7 @@ module easy{
          */
         public addHandleEvent(type:string, funcName:string):void {
             //console.log("ReceiveGroup this=" + egret.getQualifiedClassName(this) + ", addHandleEvent=" + type + ", funcName=" + funcName);
+            easy.MessageControler.addEvent(type)
             this.METHOD_DEF[type] = funcName;
         }
 

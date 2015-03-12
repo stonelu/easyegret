@@ -47,6 +47,7 @@ module easy{
         public static show(clz:any, data:any = null):any {
             var key:string = egret.getQualifiedClassName(clz);
             console.log("Win change clz=" + key);
+            if (GlobalSetting.REPORT_UI) Report.send({"name":key, "type":"win", "action":"show", "data":data}, "/ui");
             if (PopupManager._instanceDict.hasOwnProperty(key)){
                 PopupManager.waitShowWin = PopupManager._instanceDict[key];
             } else {

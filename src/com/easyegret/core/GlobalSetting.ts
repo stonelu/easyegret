@@ -92,16 +92,27 @@ module easy {
          */
         public static VIEW_MINI_HEIGHT:number = 300;//最小view高
         /**
-         * 配置文件
-         * 一般会记录http的访问地址,由该地址,获取服务器列表和版本信息
+         * 开关
+         * 对UI的可点击对象进行报表统计
          * @type {null}
          */
-        public static XML_CONFIG:egret.XML = null;//配置文件
+        public static REPORT_UI:boolean = false;
         /**
-         * 安装包自带的版本信息
-         * @type {null}
+         * 报表URL地址
          */
-        public static XML_VERSION:egret.XML = null;//版本文件
+        public static REPORT_URL:string = "";
+        /**
+         * 设备信息, 报表使用
+         */
+        public static APP_DEVICE:string = "";
+        /**
+         * 渠道信息, 报表使用
+         */
+        public static APP_CHANNEL:string = "";
+        /**
+         * 版本信息, 报表使用
+         */
+        public static APP_VERSION:string = "";
         /**
          * 初始化全局的数据
          */
@@ -109,6 +120,15 @@ module easy {
             GlobalSetting.STAGE = egret.MainContext.instance.stage;
             GlobalSetting.STAGE_WIDTH = GlobalSetting.STAGE.stageWidth;
             GlobalSetting.STAGE_HEIGHT = GlobalSetting.STAGE.stageHeight;
+            //uuid标识
+            if(easy.StringUtil.isUsage(easy.DaoUtil.read("main_app", "device_id"))){
+                GlobalSetting.APP_DEVICE = easy.DaoUtil.read("main_app", "device_id");
+            }else{
+                //生成唯一uuid标识
+                GlobalSetting.APP_DEVICE = UUID.newUUID();
+                DaoUtil.write("main_app", "device_id", GlobalSetting.APP_DEVICE);
+            }
+            //console.log("uuid=" + GlobalSetting.APP_DEVICE);
             if (GlobalSetting.DEV_MODEL) {
                 Debug.log = "---- GlobalSetting init!----";
                 Debug.log = "STAGE_WIDTH=" + GlobalSetting.STAGE_WIDTH + ", STAGE_HEIGHT=" + GlobalSetting.STAGE_HEIGHT;

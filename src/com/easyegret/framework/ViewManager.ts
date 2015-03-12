@@ -39,15 +39,15 @@ module easy{
          * 切换view显示
          * @param clz
          */
-        public static change(clz:any):void {
+        public static change(clz:any, data:any = null):void {
             if (ViewManager.mainContainer == null){
                 ViewManager.mainContainer = new egret.DisplayObjectContainer();
                 GlobalSetting.STAGE.addChild(ViewManager.mainContainer);
                 ViewManager.mainContainer.x = GlobalSetting.STAGE_WIDTH/2;
                 ViewManager.mainContainer.y = GlobalSetting.STAGE_HEIGHT/2;
             }
-
             var key:string = egret.getQualifiedClassName(clz);
+            if (GlobalSetting.REPORT_UI) Report.send({"name":key, "type":"view", "action":"show", "data":data}, "/ui");
             //console.log("View change clz=" + key);
             if (ViewManager._instanceDict.hasOwnProperty(key)){
                 ViewManager._waitChangeView = ViewManager._instanceDict[key];
@@ -64,6 +64,7 @@ module easy{
             //console.log("ViewManager wait.view=" + ViewManager._waitChangeView);
             if (ViewManager._waitChangeView){//未保证view创建子元素,首先要加入场景中触发创建
                 ViewManager._waitChangeView.visible = false;
+                ViewManager._waitChangeView.data = data;
                 ViewManager.mainContainer.addChildAt(ViewManager._waitChangeView, 0);
             }
             if (ViewManager._waitChangeView &&ViewManager._waitChangeView.checkResReady()) {
