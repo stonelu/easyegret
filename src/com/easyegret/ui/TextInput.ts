@@ -221,5 +221,11 @@ module easy {
 				this.invalidate();
 			}
 		}
+
+        public setFocus(){
+            if(this._textField){
+                this._textField.setFocus();
+            }
+        }
 	}
 }

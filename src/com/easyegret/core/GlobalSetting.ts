@@ -102,6 +102,10 @@ module easy {
          */
         public static REPORT_URL:string = "";
         /**
+         * 产品名
+         */
+        public static APP_NAME:string = "";
+        /**
          * 设备信息, 报表使用
          */
         public static APP_DEVICE:string = "";
