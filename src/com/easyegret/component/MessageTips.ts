@@ -30,7 +30,7 @@ module easy {
      */
     export class MessageTips extends BaseGroup {
         private static _instance:MessageTips = null;//
-        private _dulation:number = 30;//停留时间
+        private _dulation:number = 15;//停留时间
         private _mssageArr:Array<any> = [];//消息内容
 
         private _labelArr:Array<Label> = [];//当前正在显示的label
@@ -112,17 +112,17 @@ module easy {
                     label.setData(label.getData() + 1);
                     continue;
                 }
-                if (label._y ==  ViewManager.currentView.cy/2 && label.getData() < this._dulation) {//停留
-                    label.setData(label.getData() + 1);
-                } else {
+                //if (label._y ==  ViewManager.currentView.cy/2 && label.getData() < this._dulation) {//停留
+                //    label.setData(label.getData() + 1);
+                //} else {
                     if (label.getData() < this._dulation) {
-                        label._y -= 3;
+                        label._y -= 5;
                         label._alpha += 0.1;
                     } else {
-                        label._y -= 5;
+                        label._y -= 8;
                         label._alpha -= 0.1;
                     }
-                }
+                //}
                 if (label._y < 0){//回收
                     this._labelArr.splice(i,1);
                     label.removeFromParent();

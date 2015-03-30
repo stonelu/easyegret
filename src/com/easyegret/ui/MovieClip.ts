@@ -33,7 +33,7 @@ module easy {
         //当前播放帧的下标
         private _numFrameIndex:number = 0;
         //播放计数
-        private _numFrammeCount:number = 0;
+        //private _numFrammeCount:number = 0;
         //是否在播放
         private _isPlaying:boolean = false;
         //是否循环播放
@@ -58,13 +58,14 @@ module easy {
 
         /**
          * 从指定帧开始播放
-         * @param frame
+         * @param fps 帧间隔时间
+         * @param frame  从第几帧开始播放
          */
         public play(fps:number = 0, frame:number = 0):void {
             if (fps > 0 ) this._fps = fps;
             this._numFrameIndex = frame;
-            this._numFrammeCount = 0;
-            HeartBeat.addListener(this, this.onChangeTexture);
+            //this._numFrammeCount = 0;
+            HeartBeat.addListener(this, this.onChangeTexture, this._fps);
             this._isPlaying = true;
             this.onPlaySound();
         }
@@ -76,13 +77,13 @@ module easy {
         public stop():void {
             this._isPlaying = false;
             this._numFrameIndex = 0;
-            this._numFrammeCount = 0;
+            //this._numFrammeCount = 0;
             HeartBeat.removeListener(this, this.onChangeTexture);
             if (this._sound) this._sound.pause();
         }
         public replay():void {
             this._isPlaying = true;
-            HeartBeat.addListener(this, this.onChangeTexture);
+            HeartBeat.addListener(this, this.onChangeTexture, this._fps);
             if (this._sound) this._sound.play(this._loop);
         }
         /**
@@ -134,10 +135,10 @@ module easy {
                 this.stop();
                 return;
             }
-            this._numFrammeCount ++;
-            if (this._numFrammeCount >= this._fps && this._textures){
+            //this._numFrammeCount ++;
+            if (this._textures){
                 this._imgDisplay.texture = this._textures[this._numFrameIndex];
-                this._numFrammeCount = 0;
+                //this._numFrammeCount = 0;
                 this._numFrameIndex ++;
                 if (this._numFrameIndex >= this._textures.length){
                     if (!this._loop){
