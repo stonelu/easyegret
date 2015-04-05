@@ -130,12 +130,15 @@ module easy {
                             GlobalSetting.APP_CHANNEL = jsonConfig.channel[i].name;
                             GlobalSetting.REPORT_UI = jsonConfig.channel[i].report_ui;
                             GlobalSetting.REPORT = jsonConfig.channel[i].report;
+                            GlobalSetting.APP_STORAGE =  jsonConfig.channel[i].storage;
                             break;
                         }
                     }
                     Report._baseInfo = {"pn":GlobalSetting.APP_NAME, "ch":GlobalSetting.APP_CHANNEL, "ver":GlobalSetting.APP_VERSION, "dev":GlobalSetting.APP_DEVICE, "ti":0, "tk":0};
                     //console.log("@Report config init =" + JSON.stringify(jsonConfig));
                 }
+                //派发一个 easy_report_config_complete
+                EventManager.dispatch("easy_report_config_complete");
             }
         }
     }

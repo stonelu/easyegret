@@ -128,6 +128,14 @@ module easy {
          */
         public static APP_PROVIDE:number = 0;
         /**
+         * app存取数据的方式
+         */
+        public static APP_STORAGE:string = "local";//local:本地, net:网络, local_net:混合模式
+        //存储方式的常量设定
+        public static STORAGE_LOCAL:string = "local";//本地存储方式
+        public static STORAGE_NET:string = "net";//网络存储方式
+        public static STORAGE_LOCAL_NET:string = "local_net";//本地和网络混合存储方式
+        /**
          * 初始化全局的数据
          */
         public static initData():void{

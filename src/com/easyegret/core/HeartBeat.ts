@@ -111,14 +111,37 @@ module easy {
          * @param heartRrate 心率, 从加入开始计算,当达到frameCount的值时,进行一次func call
          * @param repeat 要循环 call func 的次数
          * @param params 回传的参数值
+         * @param nowExecute 立即执行
          */
-        public static addListener(thisArg:any, respone:Function, heartRrate:number = 1, repeat:number = -1, delay:number = 0, params:Array<any> = null):boolean {
+        public static addListener(thisArg:any, respone:Function, heartRrate:number = 1, repeat:number = -1, delay:number = 0, params:Array<any> = null, nowExecute:boolean = false):boolean {
             if (respone == null || HeartBeat.isContainerListener(thisArg, respone)) return false;//同一个func防止重复添加
             //console.log("HeartBeat ADD Func=" + respone + ", clz=" + egret.getQualifiedClassName(thisArg));
             var item:BeatItem = ObjectPool.getByClass(BeatItem);
             //if (GlobalSetting.DEV_MODEL) item.traceMsg = new Error().getStackTrace();//调试信息追踪
             item.setData(thisArg, respone, heartRrate, repeat, delay, params);
             HeartBeat._listeners.push(item);
+            if (nowExecute) {
+                item.loopcount ++;
+                if (item.param && item.param.length > 0) {
+                    //console.log("222222")
+                    //显式定义参数,直接用指定参数返回
+                    item.func.apply(item.thisArg, item.param);
+                } else {//无指定参数
+                    //console.log("333333 arguments=" + item.func.length)
+                    if (item.func.length == 0) {//无参数要求
+                        item.func.call(item.thisArg);
+                    } else {//func有参数,参数boolean返回true代表最后一次call, 参数number表示第几次调用
+                        //console.log("heatbeat=" + typeof(item.func.arguments[0]))
+                        //if (item.func.arguments[0] instanceof boolean) {
+                        item.func.call(item.thisArg, item.del);
+                        //} else if (item.func.arguments[0] instanceof number) {
+                        //    item.func.call(item.thisArg, item.loopcount);
+                        //} else {
+                        //    item.func.call(item.thisArg, null);
+                        //}
+                    }
+                }
+            }
             GlobalSetting.STAGE.addEventListener(egret.Event.ENTER_FRAME, HeartBeat.onEnterFrame, HeartBeat);
             return true;
         }

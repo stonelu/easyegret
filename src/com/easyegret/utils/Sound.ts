@@ -25,45 +25,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 module easy {
-    export class UUID {
+    export class Sound {
         /**
-         * 生成一个36位长度的uuid标识
+         * 播放声音
          * @returns {string}
          */
-        public static newUUID():string {
-            var new4Data = () => {
-                var max:number = Math.pow(16, 4) - 1;
-                var newNum:number = Math.floor(Math.random() * max);
-                var newNumToStr:string = newNum.toString(16);
-                while (newNumToStr.length < 4) {
-                    newNumToStr = "0" + newNumToStr;
-                }
-                return newNumToStr;
-            };
-
-            var data1:string = new4Data() + new4Data();
-            var data2:string = new4Data();
-            var data3:string = new4Data();
-            var data4:string = new4Data();
-            var data5:string = new4Data() + new4Data() + new4Data();
-
-            return data1 + "-" + data2 + "-" + data3 + "-" + data4 + "-" + data5;
-        }
-
-        /**
-         * 获取url中的参数值
-         * @param name
-         * @returns {*}
-         */
-        public static getUrlByName(name:string):string {
-            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
-            if (location) {
-                var r = location.search.substr(1).match(reg);
-                if (r != null) {
-                    return decodeURI(decodeURIComponent(decodeURI(r[2])));
-                }
+        public static play(name:string):void {
+            if(GlobalSetting.VOLUME_OPEN && RES.getRes("sound_money_fly")){
+                RES.getRes("sound_money_fly").play();
             }
-            return "";
         }
     }
 }
