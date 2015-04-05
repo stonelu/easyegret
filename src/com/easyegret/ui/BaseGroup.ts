@@ -48,9 +48,17 @@ module easy {
 		private _enabled:boolean = true;//不可用状态
 
 		private _hasInvalidatePosition:boolean = false;//是否已经标记重新计算位置布局
-        public constructor() {
+        /**
+         * 延迟绘制,使用在easy ui生成的代码,等待到材质validation后,再进行绘制渲染
+         */
+        private _drawDelay:boolean = false;
+        private _hasInvalidate:boolean = false;//是否下一帧重绘
+
+        public constructor(drawDelay:boolean = false) {
 			super();
 			this.addEventListener(egret.Event.ADDED_TO_STAGE, this.onAddToStage, this);
+            this._drawDelay = drawDelay;
+            //console.log("this._drawDelay=" + this._drawDelay)
 		}
 		/**
 		 * 第一次加入场景的时候会运行该方法
@@ -59,6 +67,7 @@ module easy {
 			this.removeEventListener(egret.Event.ADDED_TO_STAGE, this.onAddToStage, this);
 			this.createChildren();//先创建
 			this.initData();
+            //console.log("222222this._drawDelay=" + this._drawDelay)
 		}
 
 		/**
@@ -470,5 +479,50 @@ module easy {
 			}
 			return regPoint;
 		}
+        public invalidate():void{
+            if(!this._hasInvalidate && !this._drawDelay){
+                //console.log("add invalidate draw")
+                this.addEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
+                this._hasInvalidate = true;
+            }
+        }
+        /**
+         * 重绘通知
+         */
+        public onInvalidate(event:egret.Event):void{
+            this.removeEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
+            this._hasInvalidate = false;
+            this.draw();
+        }
+        public draw():void{
+            //console.log("draw name=" + this.name);
+        }
+
+        public _setDrawDelay(delay:boolean) {
+            this._drawDelay = delay;
+            if (this._drawDelay ) {
+                this.removeEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
+                this._hasInvalidate = false;
+            } else {
+                this.invalidate();
+            }
+        }
+        /**
+         * 设置延迟draw
+         * @param delay
+         */
+        public set drawDelay(delay:boolean) {
+            //console.log("drawDelay=" + delay)
+            this._drawDelay = delay;
+            if (this._drawDelay ) {
+                this.removeEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
+                this._hasInvalidate = false;
+            } else {
+                this.invalidate();
+            }
+        }
+        public get drawDelay():boolean {
+            return this._drawDelay;
+        }
     }
 }

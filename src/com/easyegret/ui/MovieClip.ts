@@ -41,8 +41,8 @@ module easy {
         //声音播放
         private _soundName:string = null;
         private _sound:egret.Sound = null;
-        public constructor() {
-            super();
+        public constructor(drawDelay:boolean = false) {
+            super(drawDelay);
         }
         /**
          * 初始化主场景的组件

@@ -29,7 +29,7 @@ module easy{
          * 设置ui层的显示对象
          * @param myui
          */
-        public setUI(myui:egret.DisplayObject) {
+        public setUI(myui:BaseGroup) {
             super.setUI(myui);
             this._ui = myui;
             if (this._ui) {

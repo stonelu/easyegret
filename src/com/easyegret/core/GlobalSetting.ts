@@ -93,6 +93,12 @@ module easy {
         public static VIEW_MINI_HEIGHT:number = 300;//最小view高
         /**
          * 开关
+         * 进行报表统计
+         * @type {null}
+         */
+        public static REPORT:boolean = false;
+        /**
+         * 开关
          * 对UI的可点击对象进行报表统计
          * @type {null}
          */
@@ -117,6 +123,10 @@ module easy {
          * 版本信息, 报表使用
          */
         public static APP_VERSION:string = "";
+        /**
+         * 使用的渠道, 报表使用
+         */
+        public static APP_PROVIDE:number = 0;
         /**
          * 初始化全局的数据
          */

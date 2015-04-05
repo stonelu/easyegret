@@ -33,26 +33,13 @@ module easy {
         private _scale9GridRect:egret.Rectangle = null;//九宫拉伸的尺寸
         private _fillMode:string = "scale";//scale, repeat.
         private _smoothing:boolean = false;
-        private _hasInvalidate:boolean = false;//是否下一帧重绘
-        public constructor() {
-            super();
+        public constructor(drawDelay:boolean = false) {
+            super(drawDelay);
         }
         public createChildren():void {
             super.createChildren();
             this._bitmap = new egret.Bitmap();
             this.addChild(this._bitmap);
-        }
-        public invalidate():void{
-            if(!this._hasInvalidate)this.addEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
-            this._hasInvalidate = true;
-        }
-        /**
-         * 重绘通知
-         */
-        public onInvalidate(event:egret.Event):void{
-            this.removeEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
-            this._hasInvalidate = false;
-            this.draw();
         }
         /**
          * Sets/gets the fillMode of the scale9Grid bitmap.(scale|repeat)

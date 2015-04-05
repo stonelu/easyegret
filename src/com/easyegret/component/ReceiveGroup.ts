@@ -37,7 +37,7 @@ module easy{
         /**
          * 对应的ui展现
          */
-        public _ui:egret.DisplayObject = null;
+        public _ui:BaseGroup = null;
         /**
          * ui资源已准备好
          * @type {boolean}
@@ -59,8 +59,15 @@ module easy{
         private _enterEffect:IEffect = null;
 
         public constructor() {
-            super();
+            super(true);
             this.initWeekListener();
+        }
+        /**
+         * 第一次加入场景的时候会运行该方法
+         */
+        public onAddToStage(event:Event):void {
+            super.onAddToStage(event);
+            this.drawDelay = true;
         }
         /**
          * 初始化弱监听方法,以便分发协议数据包用
@@ -193,7 +200,7 @@ module easy{
          * 设置ui层的显示对象
          * @param myui
          */
-        public setUI(myui:egret.DisplayObject) {
+        public setUI(myui:BaseGroup) {
             this._ui = myui;
             //console.log("!!!view set ui!! 000 this._ui=" + egret.getQualifiedClassName(this._ui));
             if (this._ui) {
@@ -221,16 +228,21 @@ module easy{
             //检测ui的情况,自动启动loading加载
             //console.log("checkResReady 000 this._ui=" + this._ui + ", resSpriteSheet=" + this._ui.hasOwnProperty("resSpriteSheet") + ", resFiles=" + this._ui.hasOwnProperty("resFiles"))
             //console.log("checkResReady 000 this._ui=" + this._ui)
-            if (!this._uiResReady && this._ui && this._ui.hasOwnProperty("resSpriteSheet") && this._ui.hasOwnProperty("resFiles")){
+            if (!this._uiResReady && this._ui && this._ui["resFiles"]){
                 //console.log("checkResReady 1111")
-                if (this._loadingUIClz) {
-                    //console.log("checkResReady 2222")
-                    var loading:LoadingBaseUI = ObjectPool.getByClass(this._loadingUIClz, false);
-                    loading.enter();
-                } else {
-                    //console.log("checkResReady 3333")
-                    //没有对应的loading,为避免一直加载不进去,这里直接return true
+                if (this._ui["resSpriteSheet"] == "" && this._ui["resFiles"].length == 0) {
+                    this.validateNow();
                     return true;
+                } else {
+                    if (this._loadingUIClz) {
+                        //console.log("checkResReady 2222")
+                        var loading:LoadingBaseUI = ObjectPool.getByClass(this._loadingUIClz, false);
+                        loading.enter();
+                    } else {
+                        //console.log("checkResReady 3333")
+                        //没有对应的loading,为避免一直加载不进去,这里直接return true
+                        return true;
+                    }
                 }
                 //console.log("checkResReady 4444")
                 return false;
@@ -243,7 +255,10 @@ module easy{
          * 若view中有逻辑使用到ui的素材,应该在这里做素材的赋值
          */
         public validateNow():void{
+            console.log("clz=" + egret.getQualifiedClassName(this)  + ", validateNow!!")
             if (this._ui && this._ui["validateNow"]) this._ui["validateNow"]();
+            this.drawDelay = false;
+            if (this._ui)this._ui.drawDelay = false;
         }
     }
 }

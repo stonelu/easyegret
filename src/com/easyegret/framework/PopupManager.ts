@@ -60,34 +60,13 @@ module easy{
                 PopupManager._mask.graphics.beginFill(0x000000, 0.4);
                 PopupManager._mask.graphics.drawRect(0, 0, GlobalSetting.STAGE_WIDTH, GlobalSetting.STAGE_HEIGHT);
                 PopupManager._mask.graphics.endFill();
-                ////var shape:egret.Shape = new egret.Shape();
-                ////shape.graphics.beginFill(0x000000, 0.5);
-                ////shape.graphics.drawRect(0, 0, GlobalSetting.STAGE_WIDTH, GlobalSetting.STAGE_HEIGHT);
-                ////shape.graphics.endFill();
-                ////shape.width = GlobalSetting.STAGE_WIDTH;
-                ////shape.height = GlobalSetting.STAGE_HEIGHT;
-                //
-                ////var textureMask:egret.RenderTexture = new egret.RenderTexture();
-                ////textureMask.drawToTexture(shape);
-                ////PopupManager._mask = new egret.Bitmap();
-                ////PopupManager._mask.touchEnabled = false;
-                ////PopupManager._mask.texture = textureMask;
-                ////PopupManager._mask.fillMode = egret.BitmapFillMode.SCALE;
-                ////PopupManager._mask.width = GlobalSetting.STAGE_WIDTH;
-                ////PopupManager._mask.height = GlobalSetting.STAGE_HEIGHT;
-                //
-                //PopupManager._mask = new easy.Group();
-                //PopupManager._mask.touchChildren = false;
-                //PopupManager._mask.touchEnabled = false;
-                //PopupManager._mask.width = GlobalSetting.STAGE_WIDTH;
-                //PopupManager._mask.height = GlobalSetting.STAGE_HEIGHT;
             }
             ViewManager.mainContainer.touchEnabled = false;
             ViewManager.mainContainer.touchChildren = false;
             GlobalSetting.STAGE.addChild(PopupManager._mask);
             if (PopupManager.waitShowWin){//未保证view创建子元素,首先要加入场景中触发创建
                 PopupManager.waitShowWin.data = data;
-                PopupManager.waitShowWin.visible = false;
+                PopupManager.waitShowWin.alpha = 0;
                 GlobalSetting.STAGE.addChildAt(PopupManager.waitShowWin, 0);
             }
             if (PopupManager.waitShowWin &&PopupManager.waitShowWin.checkResReady()) {
@@ -106,7 +85,7 @@ module easy{
             if (PopupManager.waitShowWin) {
                 if (!PopupManager.waitShowWin._uiResReady) PopupManager.waitShowWin._uiResReady = true;//ui的res已经准备完成,下次不需要download了
                 PopupManager.waitShowWin.removeFromParent();
-                PopupManager.waitShowWin.visible = true;
+                PopupManager.waitShowWin.alpha = 1;
                 //PopupManager.waitShowWin.alpha = 1;
                 GlobalSetting.STAGE.addChild(PopupManager.waitShowWin);
                 PopupManager.waitShowWin.x = ViewManager.currentView.cx - PopupManager.waitShowWin.cx;

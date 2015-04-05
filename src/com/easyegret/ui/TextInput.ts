@@ -45,8 +45,8 @@ module easy {
 
 		private _autoSize:boolean = true;//根据文字自动调整Label的尺寸
 
-		public constructor(){
-			super();
+		public constructor(drawDelay:boolean = false){
+			super(drawDelay);
 		}
 		public createChildren():void{
 			super.createChildren();

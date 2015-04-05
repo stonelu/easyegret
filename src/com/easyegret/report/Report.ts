@@ -41,6 +41,9 @@ module easy {
          * 通用统计信息
          */
         public static send(data:any, sufixUrl:string = "", token:number = 0):void {
+            if (!GlobalSetting.REPORT) {
+                return;
+            }
             if (!Report._isInit){
                 Report.init();
                 console.log("[error]:report not init!")
@@ -118,12 +121,17 @@ module easy {
                 var jsonConfig:any = RES.getRes("easy_report_config");
                 if (jsonConfig) {
                     Report._isInit = true;
-                    GlobalSetting.APP_CHANNEL = jsonConfig.channel;
                     GlobalSetting.APP_VERSION = jsonConfig.version;
                     GlobalSetting.REPORT_URL = jsonConfig.url;
                     GlobalSetting.APP_NAME = jsonConfig.name;
-                    if (jsonConfig.report_ui){
-                        GlobalSetting.REPORT_UI = true;
+                    GlobalSetting.APP_PROVIDE = jsonConfig.provide;
+                    for(var i = 0; i < jsonConfig.channel.length; i++) {
+                        if (GlobalSetting.APP_PROVIDE == jsonConfig.channel[i].id) {
+                            GlobalSetting.APP_CHANNEL = jsonConfig.channel[i].name;
+                            GlobalSetting.REPORT_UI = jsonConfig.channel[i].report_ui;
+                            GlobalSetting.REPORT = jsonConfig.channel[i].report;
+                            break;
+                        }
                     }
                     Report._baseInfo = {"pn":GlobalSetting.APP_NAME, "ch":GlobalSetting.APP_CHANNEL, "ver":GlobalSetting.APP_VERSION, "dev":GlobalSetting.APP_DEVICE, "ti":0, "tk":0};
                     //console.log("@Report config init =" + JSON.stringify(jsonConfig));

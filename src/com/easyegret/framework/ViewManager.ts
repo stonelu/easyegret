@@ -63,7 +63,7 @@ module easy{
             //检测素材资源是否准备完成,没完成则等待进入
             //console.log("ViewManager wait.view=" + ViewManager._waitChangeView);
             if (ViewManager._waitChangeView){//未保证view创建子元素,首先要加入场景中触发创建
-                ViewManager._waitChangeView.visible = false;
+                ViewManager._waitChangeView.alpha = 0;
                 ViewManager._waitChangeView.data = data;
                 ViewManager.mainContainer.addChildAt(ViewManager._waitChangeView, 0);
             }
@@ -89,7 +89,7 @@ module easy{
                 if (!ViewManager._waitChangeView._uiResReady) ViewManager._waitChangeView._uiResReady = true;//ui的res已经准备完成,下次不需要download了
                 ViewManager._waitChangeView.removeFromParent();
                 ViewManager.mainContainer.addChild(ViewManager._waitChangeView);
-                ViewManager._waitChangeView.visible = true;
+                ViewManager._waitChangeView.alpha = 1;
                 ViewManager._waitChangeView.anchorX = 0.5
                 ViewManager._waitChangeView.anchorY = 0.5
                 ViewManager._waitChangeView.enter();

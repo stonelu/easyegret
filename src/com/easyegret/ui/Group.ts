@@ -53,7 +53,6 @@ module easy {
 		 * 默认背景是否带边框
 		 */
 		private _border:boolean = true;
-        private _hasInvalidate:boolean = false;//是否下一帧重绘
 		/**
 		 * 是否将子代剪切到视区的边界,
 		 * 默认为true,剪切.
@@ -61,8 +60,8 @@ module easy {
 		private _clip:boolean = false;
 		private _touchNonePixel:boolean = false;//没有像素点时是否能触发事件
 
-        public constructor() {
-            super();
+        public constructor(drawDelay:boolean = false) {
+            super(drawDelay);
         }
 		/**
 		 * 初始化主场景的组件
@@ -71,7 +70,6 @@ module easy {
 		 */
 		public createChildren():void {
 			super.createChildren();
-			this.invalidate();
 		}
 		/**
 		 * 默认样式色块颜色值. 
@@ -149,18 +147,6 @@ module easy {
 		/**
 		 * 属性失效,需要下一帧重新绘制更新
 		 */
-		public invalidate():void{
-			if(!this._hasInvalidate)this.addEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
-            this._hasInvalidate = true;
-		}
-		/**
-		 * 重绘通知
-		 */
-		public onInvalidate(event:egret.Event):void{
-			this.removeEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
-            this._hasInvalidate = false;
-			this.draw();
-		}
 		public setSize(w:number, h:number):void {
 			super.setSize(w, h);
 			this.invalidate();
@@ -171,7 +157,9 @@ module easy {
 		public draw():void{
 			//console.log("Group draw");
 			if (this.width == 0 || this.height == 0) return;
-			//console.log("Group draw this._clip=" + this._clip);
+            super.draw();
+            //console.log("Group draw");
+            //console.log("Group draw this._clip=" + this._clip);
 			if(this._clip){//剪裁
 				if (this.scrollRect == null){
 					this.scrollRect = new egret.Rectangle(0, 0, this.width, this.height);

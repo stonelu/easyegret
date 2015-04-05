@@ -33,8 +33,8 @@ module easy {
 		public _hAlign:string = egret.HorizontalAlign.LEFT;
 		public _vAlign:string = egret.VerticalAlign.MIDDLE;
 
-		public constructor(){
-			super();
+		public constructor(drawDelay:boolean = false){
+			super(drawDelay);
 		}
 
 		/**

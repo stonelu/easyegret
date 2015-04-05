@@ -30,6 +30,7 @@ module easy {
      */
 	export class Button extends BaseGroup {
         public static TOGGLE_PREFIX:string = "ui#button#toggle_";//toggle事件的前缀,尽量避免受到其他事件名称的混淆
+        public static DEFAULT_TEXTURE:egret.RenderTexture = null;//默认材质
 
         public static STATE_UP:string = "up";
         public static STATE_OVER:string = "over";
@@ -75,8 +76,6 @@ module easy {
         //label字体
         private _fontName:string = null;
 
-        private _hasInvalidate:boolean = false;//是否下一帧重绘
-
         private _scale9GridEnable:boolean = false;
         private _scale9GridRect:egret.Rectangle = null;//九宫拉伸的尺寸
         private _fillMode:string = "scale";//scale, repeat.
@@ -85,8 +84,8 @@ module easy {
         private _soundName:string = null;
         private _sound:egret.Sound = null;
 
-        public constructor() {
-            super();
+        public constructor(drawDelay:boolean = false) {
+            super(drawDelay);
         }
 
         public createChildren():void {
@@ -102,7 +101,7 @@ module easy {
             this.addChild(this._imgDisplay);
 
             //文字显示
-            this._label = new Label();
+            this._label = new Label(this.drawDelay);
             this._label.width = this.width;
             this._label.height = this.height;
             this._label.hAlign = egret.HorizontalAlign.CENTER;
@@ -112,22 +111,6 @@ module easy {
             this.addEventListener(egret.TouchEvent.TOUCH_BEGIN, this.onTouchEvent, this);
             this.addEventListener(egret.TouchEvent.TOUCH_END, this.onTouchEvent, this);
             //this.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onTouchEvent, this);
-            this.invalidate();
-        }
-        /**
-         * 属性失效,需要下一帧重新绘制更新
-         */
-        public invalidate():void{
-            if(!this._hasInvalidate)this.addEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
-            this._hasInvalidate = true;
-        }
-        /**
-         * 重绘通知
-         */
-        public onInvalidate(event:egret.Event):void{
-            this.removeEventListener(egret.Event.ENTER_FRAME, this.onInvalidate, this);
-            this._hasInvalidate = false;
-            this.draw();
         }
         public onTouchEvent(event:egret.TouchEvent) : void {
             if (!this.enabled){
@@ -286,35 +269,10 @@ module easy {
             //初始化显示对象和数据
             if (!this._initDisplayData){
                 if (!this._texture){
-                    //console.log("button.w=" + this.width + ", h=" + this.height)
-                    //没有材质,绘制一个默认的材质背景
-                    var shape:egret.Shape = new egret.Shape();
-                    shape.width = this.width;
-                    shape.height = this.height * 2;
-                    shape.graphics.beginFill(Style.BUTTON_FACE);
-                    shape.graphics.drawRect(0, 0 , this.width, this.height);
-                    shape.graphics.beginFill(0xfff666);
-                    shape.graphics.drawRect(0, this.height , this.width, this.height);
-                    //shape.graphics.beginFill(0x33ff66);
-                    //shape.graphics.drawRect(0, this.height * 2, this.width, this.height);
-                    shape.graphics.endFill();
-                    //boder
-                    shape.graphics.lineStyle(1, 0x000000);
-                    shape.graphics.drawRect(1, 1 , this.width-2, 2* this.height-2);
-
-                    shape.graphics.moveTo(1, this.height-1);
-                    shape.graphics.lineTo(this.width-2, this.height-1);
-                    shape.graphics.moveTo(1, this.height + 1);
-                    shape.graphics.lineTo(this.width-2, this.height + 1);
-
-                    //shape.graphics.moveTo(1, 2*this.height-1);
-                    //shape.graphics.lineTo(this.width-2, 2*this.height-1);
-                    //shape.graphics.moveTo(1, 2*this.height + 1);
-                    //shape.graphics.lineTo(this.width-2, 2*this.height + 1);
-
-                    var renderTexture:egret.RenderTexture = new egret.RenderTexture();
-                    renderTexture.drawToTexture(shape);
-                    this._texture = renderTexture;
+                    if (Button.DEFAULT_TEXTURE == null){
+                        this.initDefaultTexture();
+                    }
+                    this._texture = Button.DEFAULT_TEXTURE;
                 }
                 this.splitTextureSource();//切割成态数对应的材质
             }
@@ -394,6 +352,41 @@ module easy {
                 this._label.y = (this.height - this._label.height)/2;
             }
 		}
+
+        /**
+         * 没有材质,绘制一个默认的材质背景
+         */
+        private initDefaultTexture():void {
+            if (Button.DEFAULT_TEXTURE == null){
+                var shape:egret.Shape = new egret.Shape();
+                shape.width = this.width;
+                shape.height = this.height * 2;
+                shape.graphics.beginFill(Style.BUTTON_FACE);
+                shape.graphics.drawRect(0, 0 , this.width, this.height);
+                shape.graphics.beginFill(0xfff666);
+                shape.graphics.drawRect(0, this.height , this.width, this.height);
+                //shape.graphics.beginFill(0x33ff66);
+                //shape.graphics.drawRect(0, this.height * 2, this.width, this.height);
+                shape.graphics.endFill();
+                //boder
+                shape.graphics.lineStyle(1, 0x000000);
+                shape.graphics.drawRect(1, 1 , this.width-2, 2* this.height-2);
+
+                shape.graphics.moveTo(1, this.height-1);
+                shape.graphics.lineTo(this.width-2, this.height-1);
+                shape.graphics.moveTo(1, this.height + 1);
+                shape.graphics.lineTo(this.width-2, this.height + 1);
+
+                //shape.graphics.moveTo(1, 2*this.height-1);
+                //shape.graphics.lineTo(this.width-2, 2*this.height-1);
+                //shape.graphics.moveTo(1, 2*this.height + 1);
+                //shape.graphics.lineTo(this.width-2, 2*this.height + 1);
+
+                var renderTexture:egret.RenderTexture = new egret.RenderTexture();
+                renderTexture.drawToTexture(shape);
+                Button.DEFAULT_TEXTURE = renderTexture;
+            }
+        }
         /**
          * 切割Texture材质集
          * @param value
@@ -718,6 +711,10 @@ module easy {
         }
         public get sound():string {
             return this._soundName;
+        }
+        public set drawDelay(delay:boolean) {
+            this._setDrawDelay(delay);
+            if (this._label)this._label.drawDelay = delay;
         }
     }
 }

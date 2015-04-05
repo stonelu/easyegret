@@ -27,9 +27,17 @@
 module easy {
     export class ReportShop {
         public id:number = 0;//商店编号
+        public orderId:number = 0;//订单号,对账
         public name:string = "";    //付费点
         public rmb:number = 0;     //费用
         public type:string = "";     //类型
+        //结果
+        public state:string = "";//订单状态
+        public msg:string = "";//订单返回描述
+
+        public ext1:string = "";//备用1
+        public ext2:string = "";//备用2
+
         public constructor() {
         }
         /**
@@ -42,6 +50,12 @@ module easy {
             obj.un = this.name;  //付费点
             obj.rmb =  this.rmb;//人民币
             obj.tp = this.type;//类型
+
+            obj.oid = this.orderId;//订单号
+            obj.st = this.state;//订单状态
+            obj.msg = this.msg;//订单返回描述
+            obj.e1 = this.ext1;//备用1
+            obj.e2 = this.ext2;//备用2
             for (var key in this){
                 if (key != "id" && key != "name" && key != "rmb" && key != "type" && key != "getReportData" && key != "__class__") {
                     obj[key] = this[key];

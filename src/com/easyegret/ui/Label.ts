@@ -46,8 +46,8 @@ module easy {
 		private _autoSize:boolean = false;//根据文字自动调整Label的尺寸
 
 		public _link:Function = null;
-        public constructor() {
-            super();
+        public constructor(drawDelay:boolean = false) {
+            super(drawDelay);
         }
         public initData():void {
             super.initData();

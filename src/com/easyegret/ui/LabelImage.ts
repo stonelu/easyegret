@@ -63,8 +63,8 @@ module easy {
 
         private _rollingEffect:EffectNumberRolling = null;
 
-        public constructor() {
-            super();
+        public constructor(drawDelay:boolean = false) {
+            super(drawDelay);
         }
         /**
          * 初始化主场景的组件,加入场景时,主动调用一次
