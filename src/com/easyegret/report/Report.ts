@@ -107,8 +107,8 @@ module easy {
          * @param event
          */
         public static onLoadingGroupJosnFileError(event:RES.ResourceEvent):void {
-            RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, Report.onLoadingGroupJosnFileComplete, Report);
-            RES.removeEventListener(RES.ResourceEvent.CONFIG_LOAD_ERROR, Report.onLoadingGroupJosnFileError, Report)
+            RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE, Report.onLoadingGroupJosnFileComplete, Report);
+            RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, Report.onLoadingGroupJosnFileError, Report)
         }
         /**
          * loading配置文件的Group加载完成
@@ -116,8 +116,8 @@ module easy {
          */
         public static onLoadingGroupJosnFileComplete(event:RES.ResourceEvent):void{
             if(event.groupName=="group_easy_report_config"){
-                RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE,Report.onLoadingGroupJosnFileComplete, Report);
-                RES.removeEventListener(RES.ResourceEvent.CONFIG_LOAD_ERROR, Report.onLoadingGroupJosnFileError, Report)
+                RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE,Report.onLoadingGroupJosnFileComplete, Report);
+                RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, Report.onLoadingGroupJosnFileError, Report)
                 var jsonConfig:any = RES.getRes("easy_report_config");
                 if (jsonConfig) {
                     Report._isInit = true;

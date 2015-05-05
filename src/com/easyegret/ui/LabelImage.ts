@@ -180,6 +180,7 @@ module easy {
             for (var i = this.numChildren - 1; i >= 0; i --){
                 bitmap = <egret.Bitmap>this.getChildAt(i);
                 bitmap.texture = null;
+                bitmap.parent.removeChild(bitmap);
                 ObjectPool.recycleClass(bitmap);
             }
             //根据字符显示材质内容
@@ -264,6 +265,9 @@ module easy {
             this._rollingEffect.zoomY = scaleY;
             //console.log("setTextRolling=" + str)
             this._rollingEffect.setText("" + str);
+        }
+        public clearTextRolling():void {
+            this._rollingEffect = null;
         }
      }
     export class EffectNumberRolling{

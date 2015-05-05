@@ -26,7 +26,8 @@
  */
 module easy {
     export class ResManager {
-        private static _isInit:boolean = false;
+        private static _isInit:boolean = false;//是否已初始化
+        private static _canSplite:boolean = false;//是否可以切割
 
         private static _projectGroup:string = "";
         private static _projectName:string = "";
@@ -37,6 +38,9 @@ module easy {
          * 通用统计信息
          */
         public static getTexture(name:string):egret.Texture {
+            if (!this._isInit && ResManager._canSplite){
+                ResManager.spliteSpriteSheet();
+            }
             if (!this._isInit){
                 return null;
             }
@@ -71,8 +75,8 @@ module easy {
          * @param event
          */
         private static onLoadingGroupJosnFileError(event:RES.ResourceEvent):void {
-            RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, ResManager.onLoadingGroupJosnFileComplete, ResManager);
-            RES.removeEventListener(RES.ResourceEvent.CONFIG_LOAD_ERROR, ResManager.onLoadingGroupJosnFileError, ResManager)
+            RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE, ResManager.onLoadingGroupJosnFileComplete, ResManager);
+            RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, ResManager.onLoadingGroupJosnFileError, ResManager)
         }
         /**
          * loading配置文件的Group加载完成
@@ -81,13 +85,21 @@ module easy {
         private static onLoadingGroupJosnFileComplete(event:RES.ResourceEvent):void{
             if(event.groupName == ResManager._projectGroup + "_group"){
                 //console.log("ResManager init!!")
+                ResManager._canSplite = true;
+                RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE, ResManager.onLoadingGroupJosnFileComplete, ResManager);
+                RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, ResManager.onLoadingGroupJosnFileError, ResManager)
+            }
+        }
+        /**
+         * 切割材质
+         */
+        private static spliteSpriteSheet():void {
+            if (!ResManager._isInit && ResManager._canSplite) {
                 ResManager._isInit = true;
-                RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE,ResManager.onLoadingGroupJosnFileComplete, ResManager);
-                RES.removeEventListener(RES.ResourceEvent.CONFIG_LOAD_ERROR, ResManager.onLoadingGroupJosnFileError, ResManager)
                 var jsonData:any = RES.getRes(ResManager._projectGroup + "_json");
                 if (jsonData) {
                     ResManager._spriteSheet = new egret.SpriteSheet(RES.getRes(ResManager._projectGroup + "_img"));
-                    for (var key in jsonData.texture){
+                    for (var key in jsonData.texture) {
                         ResManager._spriteSheet.createTexture(key, jsonData.texture[key].x, jsonData.texture[key].y, jsonData.texture[key].w, jsonData.texture[key].h);
                     }
                 }

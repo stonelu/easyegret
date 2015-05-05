@@ -98,6 +98,7 @@ module easy {
 		public set width(w:number){
 			if(w > 0){
 				this._setWidth(w);
+                this.invalidate();
 			}
 		}
         public get width():number {
@@ -108,6 +109,7 @@ module easy {
 		public set height(h:number){
 			if(h > 0){
 				this._setHeight(h);
+                this.invalidate();
 			}
 		}
 		public get height():number {

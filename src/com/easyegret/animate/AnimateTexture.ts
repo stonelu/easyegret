@@ -25,34 +25,20 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 module easy {
-    export class Sound {
-        private static _soundLoop:any = {};//循环播放的文件
-        /**
-         * 播放声音
-         * @returns {string}
-         */
-        public static play(name:string, loop:boolean = false):void {
-            //console.log("sound.play=" + name + ", valume.open=" + GlobalSetting.VOLUME_OPEN)
-            var sound:egret.Sound = RES.getRes(name);
-            if(GlobalSetting.VOLUME_OPEN && sound) {
-                if (loop){
-                    Sound._soundLoop[name] = sound;
-                }
-                sound.play(loop);
-            }
-        }
-
-        /**
-         * 停止声音,对循环播放的声音有效
-         * @param name
-         */
-        public static stop(name:string):void {
-            var sound:egret.Sound = Sound._soundLoop[name];
-            if (sound) {
-                sound.pause();
-                Sound._soundLoop[name] = null;
-                delete Sound._soundLoop[name];
-            }
+    /**
+     * 动画元数据
+     */
+    export class AnimateTexture {
+        public id:string = null;//名称
+        public frame:number = 0;//播放时长
+        public width:number = 0;//材质宽
+        public height:number = 0;//材质高
+        public x:number = 0;//x值
+        public y:number = 0;//y值
+        public offsetX:number = 0;//offset x值
+        public offsetY:number = 0;//offset y值
+        public texutre:egret.Texture = null;//材质
+        public constructor() {
         }
     }
 }

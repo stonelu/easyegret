@@ -255,7 +255,7 @@ module easy{
          * 若view中有逻辑使用到ui的素材,应该在这里做素材的赋值
          */
         public validateNow():void{
-            console.log("clz=" + egret.getQualifiedClassName(this)  + ", validateNow!!")
+            //console.log("clz=" + egret.getQualifiedClassName(this)  + ", validateNow!!")
             if (this._ui && this._ui["validateNow"]) this._ui["validateNow"]();
             this.drawDelay = false;
             if (this._ui)this._ui.drawDelay = false;

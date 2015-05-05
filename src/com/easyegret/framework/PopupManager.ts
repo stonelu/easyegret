@@ -46,7 +46,7 @@ module easy{
          */
         public static show(clz:any, data:any = null):any {
             var key:string = egret.getQualifiedClassName(clz);
-            console.log("Win change clz=" + key);
+            //console.log("Win change clz=" + key);
             if (GlobalSetting.REPORT_UI) Report.send({"name":key, "type":"win", "action":"show", "data":data}, "/ui");
             if (PopupManager._instanceDict.hasOwnProperty(key)){
                 PopupManager.waitShowWin = PopupManager._instanceDict[key];
@@ -81,7 +81,7 @@ module easy{
          * 等待显示的win已经准备完毕,开始enter
          */
         public static waitWinDoEnter():void {
-            console.log("@@PopupManager waitWinDoEnter win=" + egret.getQualifiedClassName(PopupManager.waitShowWin))
+            //console.log("@@PopupManager waitWinDoEnter win=" + egret.getQualifiedClassName(PopupManager.waitShowWin))
             if (PopupManager.waitShowWin) {
                 if (!PopupManager.waitShowWin._uiResReady) PopupManager.waitShowWin._uiResReady = true;//ui的res已经准备完成,下次不需要download了
                 PopupManager.waitShowWin.removeFromParent();

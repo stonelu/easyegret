@@ -26,14 +26,14 @@
  */
 module easy {
     export class MovieClip extends BaseGroup {
-        private _imgDisplay:Image = null;
+        private _imgDisplay:egret.Bitmap = null;
         //序列帧播放间隔时长
         private _fps:number = 1;
         private _textures:Array<egret.Texture> = null;
         //当前播放帧的下标
         private _numFrameIndex:number = 0;
         //播放计数
-        //private _numFrammeCount:number = 0;
+        private _numFrammeCount:number = 0;
         //是否在播放
         private _isPlaying:boolean = false;
         //是否循环播放
@@ -41,6 +41,12 @@ module easy {
         //声音播放
         private _soundName:string = null;
         private _sound:egret.Sound = null;
+        //使用animate data的情况
+        private _animateName:string = null;
+        private _animateData:AnimateData = null;
+        //播放结束回调
+        private _callThisArg:any = null;
+        private _callFunc:Function = null;
         public constructor(drawDelay:boolean = false) {
             super(drawDelay);
         }
@@ -51,9 +57,8 @@ module easy {
          */
         public createChildren():void {
             super.createChildren();
-            this._imgDisplay = new easy.Image();
+            this._imgDisplay = new egret.Bitmap();
             this.addChild(this._imgDisplay);
-            this._imgDisplay.autoSize = false;
         }
 
         /**
@@ -62,29 +67,71 @@ module easy {
          * @param frame  从第几帧开始播放
          */
         public play(fps:number = 0, frame:number = 0):void {
+            if (!easy.StringUtil.isUsage(this._animateName) && !this._textures) return;
             if (fps > 0 ) this._fps = fps;
             this._numFrameIndex = frame;
+            if (easy.StringUtil.isUsage(this._animateName) || this._textures.length > 1) {
+                HeartBeat.addListener(this, this.onChangeTexture, 1);
+            } else {
+                this._imgDisplay.texture = this._textures[0];
+            }
             //this._numFrammeCount = 0;
-            HeartBeat.addListener(this, this.onChangeTexture, this._fps);
             this._isPlaying = true;
             this.onPlaySound();
         }
+
+        /**
+         * 暂停播放
+         */
         public pause():void {
             this._isPlaying = false;
             HeartBeat.removeListener(this, this.onChangeTexture);
             if (this._sound) this._sound.pause();
         }
+
+        /**
+         *停止播放
+         */
         public stop():void {
             this._isPlaying = false;
             this._numFrameIndex = 0;
-            //this._numFrammeCount = 0;
+            this._numFrammeCount = 0;
             HeartBeat.removeListener(this, this.onChangeTexture);
             if (this._sound) this._sound.pause();
+            if (this._callFunc) this._callFunc.call(this._callThisArg, this);
+            //console.log("movie.stop=" + this._animateName);
         }
+
+        /**
+         * 重新播放
+         */
         public replay():void {
+            if (!easy.StringUtil.isUsage(this._animateName) && !this._textures) return;
             this._isPlaying = true;
-            HeartBeat.addListener(this, this.onChangeTexture, this._fps);
+            if (easy.StringUtil.isUsage(this._animateName) || this._textures.length > 1) {
+                HeartBeat.addListener(this, this.onChangeTexture, 1);
+            } else {
+                this._imgDisplay.texture = this._textures[0];
+            }
             if (this._sound) this._sound.play(this._loop);
+        }
+
+        /**
+         * 销毁数据
+         */
+        public destory():void {
+            this._isPlaying = false;
+            this._numFrameIndex = 0;
+            this._numFrammeCount = 0;
+            HeartBeat.removeListener(this, this.onChangeTexture);
+            if (this._sound) this._sound.pause();
+            this.removeFromParent();
+            this._sound = null;
+            this._textures = null;
+            this._animateData = null;
+            this._animateName = null;
+            this._callFunc = null;
+            this._callThisArg = null;
         }
         /**
          * 设置播放的材质集合
@@ -96,6 +143,31 @@ module easy {
         public get textures():Array<egret.Texture> {
             return this._textures;
         }
+
+        /**
+         * 通过设置animate动画数据的名称来设置数据
+         * @param name
+         */
+        public set animateName(name:string) {
+            this._animateName = name;
+            this.animateData = AnimateManager.getAnimateData(name);
+        }
+
+        /**
+         * 设置animate动画数据
+         * @param item
+         */
+        public set animateData(item:AnimateData) {
+            this._animateData = item;
+            if (this._animateData) {
+                this._animateName = item.id;
+                this._fps = this._animateData.frame;
+            }
+        }
+        public get animateData():AnimateData {
+            return this._animateData;
+        }
+
         /**
          * 设置播放的声音名称
          * @param value
@@ -126,7 +198,14 @@ module easy {
         public get loop():boolean {
             return this._loop;
         }
-
+        /**
+         * 设置stop结束回调
+         * @param value
+         */
+        public setCallFunc(thisArg:any, value:Function){
+            this._callThisArg = thisArg;
+            this._callFunc = value;
+        }
         /**
          * 变更材质
          */
@@ -135,10 +214,14 @@ module easy {
                 this.stop();
                 return;
             }
-            //this._numFrammeCount ++;
+            this._numFrammeCount ++;
+            if (this._numFrammeCount >= this._fps) {
+                this._numFrammeCount = 0;
+            } else {
+                return;
+            }
             if (this._textures){
                 this._imgDisplay.texture = this._textures[this._numFrameIndex];
-                //this._numFrammeCount = 0;
                 this._numFrameIndex ++;
                 if (this._numFrameIndex >= this._textures.length){
                     if (!this._loop){
@@ -146,6 +229,31 @@ module easy {
                         return;
                     }
                     this._numFrameIndex = 0;
+                }
+            } else {//animate data的情况
+                if (this._animateData == null && StringUtil.isUsage(this._animateName)){//确保延迟加载的情况下,尽可能快的获取到动画数据
+                    this.animateData = AnimateManager.getAnimateData(this._animateName);
+                    //console.log("animateData=" + this.animateData)
+                    if (this.animateData) {
+                        this.setSize(this.animateData.width, this.animateData.height);
+                    }
+                }
+                if (this._animateData && this._animateData.textures) {
+                    var animateTexture:AnimateTexture = this._animateData.getTexture(this._numFrameIndex);
+                    //console.log("id=" + animateTexture.id)
+                    this._fps = animateTexture.frame;
+                    //this._imgDisplay.setSize(animateTexture.width, animateTexture.height);
+                    this._imgDisplay.x = this.cx + animateTexture.x;
+                    this._imgDisplay.y = this.cy + animateTexture.y;
+                    this._imgDisplay.texture = animateTexture.texutre;
+                    this._numFrameIndex++;
+                    if (this._numFrameIndex >= this._animateData.textures.length) {
+                        if (!this._loop) {
+                            this.stop();
+                            return;
+                        }
+                        this._numFrameIndex = 0;
+                    }
                 }
             }
         }

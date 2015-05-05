@@ -236,10 +236,16 @@ module easy {
             return content;
         }
 
-        public static spliteStrArr(str:string, split:string):Array<any> {
-            var result:Array<any> = [];
+        /**
+         * 切割字符串
+         * @param str 要切割的字符串
+         * @param split 切割的符号
+         * @returns {Array<any>}
+         */
+        public static spliteStrArr(str:string, split:string):Array<string> {
+            var result:Array<string> = [];
             if (StringUtil.isUsage(str)){
-                var sd:Array<any> = str.split(split);
+                var sd:Array<string> = str.split(split);
                 for (var i:number = 0; i < sd.length; i++)  {
                     if (StringUtil.isUsage(sd[i])){
                         result.push(sd[i]);
@@ -247,6 +253,45 @@ module easy {
                 }
             }
             return result;
+        }
+
+        /**
+         * 把形如key=value的字符串,切割存储在map对象,并返回
+         * @param str  k1=v1;k2=v2;k3=v3
+         * @param kvSplit key和value的切割符号
+         * @param split 大切割符号
+         */
+        public static parserStrToObj(str:string, kvSplit:string = "@", split:string = ";"):any{
+            var obj:any = {};
+            if (!StringUtil.isUsage(str)) return obj;
+            //大切割
+            var result1:Array<string> = StringUtil.spliteStrArr(str, split);
+            var keyvalue:Array<string> = null;
+            for (var i:number = 0; i < result1.length; i++)  {
+                keyvalue =StringUtil.spliteStrArr(result1[i], kvSplit);
+                if (keyvalue.length == 2){
+                    obj[keyvalue[0]] = keyvalue[1];
+                }
+            }
+            return obj
+        }
+
+        /**
+         * 解析一个对象成key=value的字符串组合
+         * @param obj
+         * @param kvSplit key和value的切割符号
+         * @param split 大切割符号
+         * @param return  k1=v1;k2=v2;k3=v3
+         */
+        public static parserObjToStr(obj:any, kvSplit:string = "@", split:string = ";"):string{
+            var str:string = "";
+            for (var key in obj){
+                //console.log(key + "=" + data[key]);
+                if (key != "__class__" && key != "hashCode") {
+                    str += key + kvSplit + obj[key] + split;
+                }
+            }
+            return str;
         }
 
         public static isPhone(str:string):boolean {
@@ -294,6 +339,28 @@ module easy {
                 str += "" + second;
             }
             return str;
+        }
+
+        /**
+         * 将 Date 转化为指定格式的String
+         * @param date
+         * @param fmt "yyyy-M-d h:m:s.S" ==> 2006-7-2 8:9:4.18   "yyyy-MM-dd hh:mm:ss.S" ==> 2006-07-02 08:09:04.423
+         * @returns {string}
+         */
+        public static dateFormat(date:Date, fmt:string):string {
+            var o = {
+                "M+": date.getMonth() + 1, //月份
+                "d+": date.getDate(), //日
+                "h+": date.getHours(), //小时
+                "m+": date.getMinutes(), //分
+                "s+": date.getSeconds(), //秒
+                "q+": Math.floor((date.getMonth() + 3) / 3), //季度
+                "S": date.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
         }
     }
 }

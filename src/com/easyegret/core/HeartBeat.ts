@@ -76,7 +76,7 @@ module easy {
             }
             //执行
             lenght = HeartBeat._functionCallList.length;
-            lenght = lenght > HeartBeat._MAX_EXECUTE_COUNT ? HeartBeat._MAX_EXECUTE_COUNT : lenght;
+            //lenght = lenght > HeartBeat._MAX_EXECUTE_COUNT ? HeartBeat._MAX_EXECUTE_COUNT : lenght;
             for (i = 0; i < lenght; i++) {
                 item = HeartBeat._functionCallList.pop();
                 //判断func的参数情况

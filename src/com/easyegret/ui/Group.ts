@@ -38,7 +38,7 @@ module easy {
 		/**
 		 * 默认背景的颜色
 		 */
-		private _bgColor:number = Style.BACKGROUND;
+		private _bgColor:number = 0xCCCCCC;
 		/**
 		 * 默认背景的显示对象
 		 */
@@ -159,7 +159,7 @@ module easy {
 			if (this.width == 0 || this.height == 0) return;
             super.draw();
             //console.log("Group draw");
-            //console.log("Group draw this._clip=" + this._clip);
+            //console.log("Group draw this._clip=" + this._clip + ", _showBg=" + this._showBg);
 			if(this._clip){//剪裁
 				if (this.scrollRect == null){
 					this.scrollRect = new egret.Rectangle(0, 0, this.width, this.height);
