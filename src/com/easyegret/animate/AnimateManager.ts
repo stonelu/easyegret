@@ -31,6 +31,9 @@ module easy {
     export class AnimateManager {
         private static _animiateDataDict:any = {};
 
+        private static waiting_groups:Array<string> = [];//等待下载的group列表
+        private static waiting_names:Array<string> = [];//等待下载的name列表
+
         /**
          * 获取动画数据
          */
@@ -46,15 +49,19 @@ module easy {
             }
             return null;
         }
-
-        private static waiting_gtoups:Array<string> = [];//等待下载的group列表
         /**
          * url加载json data数据到RES中
          */
         public static loadAnimate(name:string):void {
+            if (!easy.StringUtil.isUsage(name)) return;
+            if (AnimateManager.waiting_groups.indexOf(name) >= 0 || AnimateManager.waiting_names.indexOf(name) >= 0 || RES.isGroupLoaded(name + "_animate_group")) return;
             RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, AnimateManager.onLoadingConfigComplete, AnimateManager);
+            RES.addEventListener(RES.ResourceEvent.CONFIG_LOAD_ERROR, AnimateManager.onLoadingConfigError, AnimateManager);
             RES.loadConfig("resource/assets/animate/" + name + "_loader.json","resource/");
-            AnimateManager.waiting_gtoups.push(name + "_animate_group");
+            if (AnimateManager.waiting_groups.indexOf(name) < 0) AnimateManager.waiting_groups.push(name);
+            if (AnimateManager.waiting_names.indexOf(name) < 0) AnimateManager.waiting_names.push(name);
+            console.log("animate loading url=" + "resource/assets/animate/" + name + "_loader.json");
+            easy.HeartBeat.addListener(AnimateManager, AnimateManager.onHeartBeatCheckLoadedFile, 60);
         }
         /**
          * loading Json文件的加载
@@ -62,15 +69,18 @@ module easy {
          */
         private static onLoadingConfigComplete(event:RES.ResourceEvent):void{
             //console.log("onLoadingConfigComplete event.name=" + event.resItem.name + ", url=" + event.resItem.url)
-            RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, AnimateManager.onLoadingConfigComplete, AnimateManager);
             RES.addEventListener(RES.ResourceEvent.GROUP_COMPLETE, AnimateManager.onLoadingGroupJosnFileComplete, AnimateManager);
+            RES.addEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, AnimateManager.onLoadingGroupJosnFileError, AnimateManager);
             //console.log("add  load complete!!!")
-            for(var i = AnimateManager.waiting_gtoups.length; i >=0; i--) {
-                if (RES.getGroupByName(AnimateManager.waiting_gtoups[i]).length > 0) {
-                    RES.loadGroup(AnimateManager.waiting_gtoups[i]);
-                    //console.log("loading group=" + AnimateManager.waiting_gtoups[i]);
-                    AnimateManager.waiting_gtoups.splice(i,1);
+            for(var i = AnimateManager.waiting_groups.length-1; i >= 0; i--) {
+                if (RES.getGroupByName(AnimateManager.waiting_groups[i] + "_animate_group").length > 0 && !RES.isGroupLoaded(AnimateManager.waiting_groups[i] + "_animate_group")){
+                    RES.loadGroup(AnimateManager.waiting_groups[i] + "_animate_group");
+                    console.log("animate loading group=" + AnimateManager.waiting_groups[i]);
+                    AnimateManager.waiting_groups.splice(i,1);
                 }
+                //if (AnimateManager.waiting_names.indexOf(AnimateManager.waiting_groups[i]) >= 0) {
+                //    AnimateManager.waiting_names.splice(AnimateManager.waiting_names.indexOf(AnimateManager.waiting_groups[i]),1);
+                //}
             }
         }
         /**
@@ -78,9 +88,55 @@ module easy {
          * @param event
          */
         private static onLoadingGroupJosnFileComplete(event:RES.ResourceEvent):void{
-            if(AnimateManager.waiting_gtoups.length == 0){
-                //console.log("load complete!!!")
+            console.log("animate load complete!!!=" + event.groupName);
+            if (easy.StringUtil.isUsage(event.groupName) && event.groupName.indexOf("_animate_group") >=0) {
+                var groupName:string = event.groupName.substring(0, event.groupName.indexOf("_animate_group"));
+                if (AnimateManager.waiting_names.indexOf(groupName) >= 0) AnimateManager.waiting_names.splice(AnimateManager.waiting_names.indexOf(groupName),1)
+            }
+            AnimateManager.onHeartBeatCheckLoadedFile();
+        }
+        /**
+         * 加载失败
+         * @param event
+         */
+        public static onLoadingConfigError(event:RES.ResourceEvent):void {
+            console.log("animate load file error=" + event)
+            //RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE, AnimateManager.onLoadingGroupJosnFileComplete, AnimateManager);
+            //RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, AnimateManager.onLoadingGroupJosnFileError, AnimateManager)
+        }
+        /**
+         * 加载失败
+         * @param event
+         */
+        public static onLoadingGroupJosnFileError(event:RES.ResourceEvent):void {
+            console.log("animate load group error=" + event)
+            //RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE, AnimateManager.onLoadingGroupJosnFileComplete, AnimateManager);
+            //RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, AnimateManager.onLoadingGroupJosnFileError, AnimateManager)
+        }
+
+        /**
+         * 检测是否有文件没有下载完成,重新加入下载列表中
+         */
+        private static onHeartBeatCheckLoadedFile():void {
+            if (AnimateManager.waiting_groups.length == 0 && AnimateManager.waiting_names.length == 0) {
+                RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, AnimateManager.onLoadingConfigComplete, AnimateManager);
+                RES.removeEventListener(RES.ResourceEvent.CONFIG_LOAD_ERROR,AnimateManager.onLoadingConfigError, AnimateManager);
                 RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE,AnimateManager.onLoadingGroupJosnFileComplete, AnimateManager);
+                RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR,AnimateManager.onLoadingGroupJosnFileError, AnimateManager);
+                easy.HeartBeat.removeListener(AnimateManager, AnimateManager.onHeartBeatCheckLoadedFile);
+            }
+            if(AnimateManager.waiting_groups.length > 0 && AnimateManager.waiting_names.length > 0){
+                var reloadArr:Array<string> = [];
+                for(var i = AnimateManager.waiting_names.length-1; i >= 0; i--) {
+                    if (AnimateManager.waiting_groups.indexOf(AnimateManager.waiting_names[i]) >= 0) {
+                        reloadArr.push(AnimateManager.waiting_names[i]);
+                        AnimateManager.waiting_names.splice(i,1);
+                        AnimateManager.waiting_groups.splice(AnimateManager.waiting_groups.indexOf(AnimateManager.waiting_names[i]),1);
+                    }
+                }
+                while(reloadArr.length > 0) {
+                    AnimateManager.loadAnimate(reloadArr.pop());
+                }
             }
         }
     }

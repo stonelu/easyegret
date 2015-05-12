@@ -132,6 +132,7 @@ module easy {
             this._animateName = null;
             this._callFunc = null;
             this._callThisArg = null;
+            if (this._imgDisplay)this._imgDisplay.texture = null;
         }
         /**
          * 设置播放的材质集合
@@ -200,7 +201,8 @@ module easy {
         }
         /**
          * 设置stop结束回调
-         * @param value
+         * @param thisArg func对象
+         * @param value func方法
          */
         public setCallFunc(thisArg:any, value:Function){
             this._callThisArg = thisArg;
@@ -238,7 +240,7 @@ module easy {
                         this.setSize(this.animateData.width, this.animateData.height);
                     }
                 }
-                if (this._animateData && this._animateData.textures) {
+                if (this._animateData && this._animateData.textures && this._imgDisplay) {
                     var animateTexture:AnimateTexture = this._animateData.getTexture(this._numFrameIndex);
                     //console.log("id=" + animateTexture.id)
                     this._fps = animateTexture.frame;
@@ -253,6 +255,9 @@ module easy {
                             return;
                         }
                         this._numFrameIndex = 0;
+                    }
+                    if (this._animateData.textures.length == 1){//不需要变换,停止呼吸变换
+                        HeartBeat.removeListener(this, this.onChangeTexture);
                     }
                 }
             }
