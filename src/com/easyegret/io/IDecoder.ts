@@ -4,6 +4,6 @@
 module easy {
 
 	export interface IDecoder {
-        decode(bytePacket:ByteArray):Packet;
+        decode(bytePacket:egret.ByteArray):Packet;
     }
 }

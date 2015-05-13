@@ -5,29 +5,29 @@ module easy {
 
 	export class DefaultEncoder implements IEncoder{
 		public static MATH_POW_2_32:number = 4294967296;// 2^32.
-        public encoder(packet:Packet):ByteArray{
+        public encoder(packet:Packet):egret.ByteArray{
             //回写包体长度
-            var bodyBytes:ByteArray = this.encodeBody(packet);
+            var bodyBytes:egret.ByteArray = this.encodeBody(packet);
             packet.header.length = bodyBytes.length;
-            var headBytes:ByteArray = this.encodeHeader(packet);
+            var headBytes:egret.ByteArray = this.encodeHeader(packet);
             headBytes.writeBytes(bodyBytes);
             bodyBytes.clear();
-            ObjectPool.releaseClass(bodyBytes);
+            ObjectPool.recycleClass(bodyBytes);
             return headBytes;
         }
-        public encodeHeader(packet:Packet):ByteArray {
-            var headBytes:ByteArray = ObjectPool.getObjectClass(ByteArray);
+        public encodeHeader(packet:Packet):egret.ByteArray {
+            var headBytes:egret.ByteArray = ObjectPool.getByClass(egret.ByteArray);
             headBytes.clear();
-            headBytes.endian = SocketManager.ENDIAN;
+            headBytes.endian = MySocket.ENDIAN;
             headBytes.writeShort(packet.header.length);//WORD pack_size;//包体长度,不包含协议头
             headBytes.writeShort(packet.header.messageId);//WORD  cmd_index;//命令
             headBytes.writeShort(packet.header.code);//WORD   check_code;//校验位
             return headBytes;
         }
-        public encodeBody(packet:Packet):ByteArray {
-            var outBytes:ByteArray = ObjectPool.getObjectClass(ByteArray);
+        public encodeBody(packet:Packet):egret.ByteArray {
+            var outBytes:egret.ByteArray = ObjectPool.getByClass(egret.ByteArray);
             outBytes.clear();
-            outBytes.endian = SocketManager.ENDIAN;
+            outBytes.endian = MySocket.ENDIAN;
             var i:number = 0;
             var count:number = packet.define.length;
             for (i = 0; i < count; i++){
@@ -40,15 +40,15 @@ module easy {
             return outBytes;
         }
         //CHAR	1	单字节字符
-        public writeByte(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeByte(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             outByteArray.writeByte(target[defItem.id]);
         }
         //UBYTE	1	1个字节无符合整型
-        public writeUByte(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeUByte(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             outByteArray.writeByte(target[defItem.id]);
         }
         //UBYTE	1	1个字节无符合整型
-        public writeBoolean(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeBoolean(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             if (target[defItem.id]){
                 outByteArray.writeByte(1);
             } else {
@@ -56,97 +56,84 @@ module easy {
             }
         }
         //WORD	2	2个字节短整型
-        public writeShort(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeShort(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             outByteArray.writeShort(target[defItem.id]);
         }
         //WORD	2	2个字节短整型
-        public writeUShort(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeUShort(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             outByteArray.writeShort(target[defItem.id]);
         }
         //DWORD	4	4个字节整型
-        public writeInt(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeInt(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             outByteArray.writeInt(target[defItem.id]);
         }
         //DWORD	4	4个字节无符号整型
-        public writeUInt(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeUInt(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             outByteArray.writeUnsignedInt(target[defItem.id]);
         }
         //WORD	8	8个字节数值
-        public writeUInt64(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeUInt64(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             var double:number = target[defItem.id];
-            var long_l:number = parseInt(double);
-            var long_h:number = (double-long_l)/MATH_POW_2_32;
+            var long_l:number = parseInt("" + double);
+            var long_h:number = (double-long_l)/Packet.MATH_POW_2_32;
             outByteArray.writeUnsignedInt(long_h);
             outByteArray.writeUnsignedInt(long_l);
-//            var bytes:ByteArray = ObjectPool.getObjectClass(ByteArray);
-//            bytes.clear();
-//            bytes.endian = SocketManager.ENDIAN;
-//            bytes.writeUnsignedInt(long_h);
-//            bytes.writeUnsignedInt(long_l);
-//            outByteArray.writeBytes(bytes,0,bytes.bytesAvailable);
-//            ObjectPool.releaseClass(bytes);
         }
         //WORD	8	8个字节数值
-        public writeInt64(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeInt64(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             var double:number = target[defItem.id];
-            var long_l:number = parseInt(double);
-            var long_h:number = parseInt((double-long_l)/MATH_POW_2_32);
+            var long_l:number = parseInt("" + double);
+            var long_h:number = parseInt("" + ((double-long_l)/Packet.MATH_POW_2_32));
             outByteArray.writeInt(long_h);
             outByteArray.writeUnsignedInt(long_l);
-//            var bytes:ByteArray = ObjectPool.getObjectClass(ByteArray);
-//            bytes.clear();
-//            bytes.endian = SocketManager.ENDIAN;
-//            bytes.writeInt(long_h);
-//            bytes.writeUnsignedInt(long_l);
-//            outByteArray.writeBytes(bytes,0,bytes.bytesAvailable);
-//            ObjectPool.releaseClass(bytes);
-            
         }
         //WORD	2	4个字节无符号
-        public writeUFloat(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeUFloat(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             outByteArray.writeFloat(target[defItem.id]);
         }
         //WORD	2	4个字节
-        public writeFloat(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeFloat(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             outByteArray.writeFloat(target[defItem.id]);
         }
         //WORD	8	8个字节数值
-        public writeUDouble(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeUDouble(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             var double:number = target[defItem.id];
-            var long_l:number = parseInt(double);
-            var long_h:number = (double - long_l)/MATH_POW_2_32;
-            var bytes:ByteArray = ObjectPool.getObjectClass(ByteArray);
+            var long_l:number = parseInt("" + double);
+            var long_h:number = (double - long_l)/Packet.MATH_POW_2_32;
+            var bytes:egret.ByteArray = ObjectPool.getByClass(egret.ByteArray);
             bytes.clear();
-            bytes.endian = SocketManager.ENDIAN;
+            bytes.endian = MySocket.ENDIAN;
             bytes.writeUnsignedInt(long_l);
             bytes.writeUnsignedInt(long_h);
             outByteArray.writeBytes(bytes,0,bytes.bytesAvailable);
-            ObjectPool.releaseClass(bytes);
+            bytes.clear();
+            ObjectPool.recycleClass(bytes);
         }
         //WORD	8	8个字节数值
-        public writeDouble(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeDouble(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             var double:number = target[defItem.id];
-            var long_l:number = parseInt(double);
-            var long_h:number = (double - long_l)/MATH_POW_2_32;
-            var bytes:ByteArray = ObjectPool.getObjectClass(ByteArray);
+            var long_l:number = parseInt("" + double);
+            var long_h:number = (double - long_l)/Packet.MATH_POW_2_32;
+            var bytes:egret.ByteArray = ObjectPool.getByClass(egret.ByteArray);
             bytes.clear();
-            bytes.endian = SocketManager.ENDIAN;
+            bytes.endian = MySocket.ENDIAN;
             bytes.writeUnsignedInt(long_l);
             bytes.writeInt(long_h);
             outByteArray.writeBytes(bytes,0,bytes.bytesAvailable);
-            ObjectPool.releaseClass(bytes);
+            bytes.clear();
+            ObjectPool.recycleClass(bytes);
         }
         //WCHAR(N)	N*2	双字节变长字符串	字符串以\0为结束符
-        public writeString(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeString(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             outByteArray.writeUTF(target[defItem.id]==null?"":target[defItem.id]);
         }
         //数据流
-        public writeByteArray(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeByteArray(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             outByteArray.writeShort(target[defItem.id].length);
             if (target[defItem.id].length > 0)outByteArray.writeBytes(target[defItem.id]);
         }
         //数组
-        public writeArray(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeArray(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             var vectorData:any = target[defItem.id];
             var count:number = vectorData.length;
             if (Packet.TYPE_ARRAY_CONST == defItem.type) {
@@ -172,7 +159,7 @@ module easy {
             }
         }
         //写实体
-        public writeEntity(defItem:any, outByteArray:ByteArray, target:any):void {
+        public writeEntity(defItem:any, outByteArray:egret.ByteArray, target:any):void {
             if (!target) return;
             var define:Array<any> = target.define;
             var i:number = 0;
@@ -180,14 +167,11 @@ module easy {
                 this.encodeItem(define[i], outByteArray, target);
             }
         }
-        public encodeItem(defItem:any, outByteArray:ByteArray, target:any):void{
+        public encodeItem(defItem:any, outByteArray:egret.ByteArray, target:any):void{
             switch(defItem.type) {
                 case Packet.TYPE_BYTE://CHAR	1	单字节字符
                     this.writeByte(defItem, outByteArray, target);
                     break;
-//                case Packet.TYPE_UBYTE://UBYTE	1	1个字节无符合整型
-//                    this.writeUByte(defItem, outByteArray, target);
-//                    break;
                 case Packet.TYPE_SHORT://WORD	2	2个字节无符合整型
                     this.writeShort(defItem, outByteArray, target);
                     break;

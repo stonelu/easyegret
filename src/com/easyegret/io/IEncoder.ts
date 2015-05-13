@@ -4,6 +4,6 @@
 module easy {
 
 	export interface IEncoder {
-        encoder(packet:Packet):ByteArray;
+        encoder(packet:Packet):egret.ByteArray;
     }
 }
