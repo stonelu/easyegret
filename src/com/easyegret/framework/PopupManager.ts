@@ -129,6 +129,14 @@ module easy{
             return null;
         }
 
+        public static isShow(clz:any):boolean {
+            var inst:any = PopupManager.getWinInstance(clz);
+            if (PopupManager.CURRENT_SHOW.indexOf(inst) >= 0) {
+                return true;
+            }
+            return false;
+        }
+
         private static onEventMask(event:egret.TouchEvent){
             event.stopImmediatePropagation();
             event.stopPropagation();

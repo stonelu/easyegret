@@ -695,11 +695,13 @@ module easy {
          * 初始化声音对象,并播放声音
          */
         private onPlaySound():void {
-            if (this._sound == null && easy.StringUtil.isUsage(this._soundName)) {
-                this._sound = RES.getRes(this._soundName);
-            }
-            if (this._sound){
-                this._sound.play();
+            if (GlobalSetting.VOLUME_OPEN) {
+                if (this._sound == null && easy.StringUtil.isUsage(this._soundName)) {
+                    this._sound = RES.getRes(this._soundName);
+                }
+                if (this._sound) {
+                    this._sound.play();
+                }
             }
         }
         /**

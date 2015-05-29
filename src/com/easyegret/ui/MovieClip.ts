@@ -47,6 +47,7 @@ module easy {
         //播放结束回调
         private _callThisArg:any = null;
         private _callFunc:Function = null;
+        private _autoDestory:boolean = false;//停止的时候,自动销毁
         public constructor(drawDelay:boolean = false) {
             super(drawDelay);
         }
@@ -99,6 +100,7 @@ module easy {
             HeartBeat.removeListener(this, this.onChangeTexture);
             if (this._sound) this._sound.pause();
             if (this._callFunc) this._callFunc.call(this._callThisArg, this);
+            if (this._autoDestory) this.destory();
             //console.log("movie.stop=" + this._animateName);
         }
 
@@ -296,6 +298,16 @@ module easy {
         public get totalFrame():number {
             if (this._textures) return this._textures.length;
             return 0;
+        }
+        /**
+         * 停止播放的时候,自动销毁
+         * @param value
+         */
+        public set autoDestory(value:boolean){
+            this._autoDestory = value;
+        }
+        public get autoDestory():boolean {
+            return this._autoDestory;
         }
     }
 }
