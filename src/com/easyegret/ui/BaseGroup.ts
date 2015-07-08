@@ -32,6 +32,7 @@ module easy {
 	export class BaseGroup extends egret.DisplayObjectContainer {
 		//private _width:number = 0;
 		//private _height:number = 0;
+		private _isAddedToStage:boolean = false;//是否已加入过显示列表中,可用来判断各组件是否已经具备显示赋值的作用
 		private _top:number = 0;
 		private _topEnabled:boolean = false;
 		private _left:number = 0;
@@ -44,7 +45,7 @@ module easy {
 		private _horizontalCenter:number = 0;
 		private _verticalEnabled:boolean = false;
 		private _verticalCenter:number = 0;
-		public _data:any;//可携带的数据
+		public _data:any = null;//可携带的数据
 		private _enabled:boolean = true;//不可用状态
 
 		private _hasInvalidatePosition:boolean = false;//是否已经标记重新计算位置布局
@@ -64,6 +65,7 @@ module easy {
 		 * 第一次加入场景的时候会运行该方法
 		 */
 		public onAddToStage(event:Event):void {
+			this._isAddedToStage = true;
 			this.removeEventListener(egret.Event.ADDED_TO_STAGE, this.onAddToStage, this);
 			this.createChildren();//先创建
 			this.initData();
@@ -135,6 +137,7 @@ module easy {
 			if(this.width != w || this.height != h) {
 				this._setWidth(w);
 				this._setHeight(h);
+				this.invalidate();
 				//this._width = w;
 				//this._height = h;
 				//console.log("BaseGroup.setSize this.width=" + this.width + ", this.height=" + this.height);
@@ -142,6 +145,7 @@ module easy {
 				for (var i:number = 0; i < this.numChildren; i++) {
 					if (this.getChildAt(i) instanceof BaseGroup)(<BaseGroup><any> (this.getChildAt(i))).resetPosition();
 				}
+				this.resetPosition();
 			}
         }
 
@@ -296,6 +300,7 @@ module easy {
 		 * 容器相对位置刷新
 		 */		
 		public resetPosition():void{
+            this.removeEventListener(egret.Event.ENTER_FRAME, this.onInvalidatePosition, this);
 			var p:egret.DisplayObject = this.parent;
 			if(p != null){
 				var parentWidth:number = p.width;
@@ -341,26 +346,28 @@ module easy {
 				}
 
 				if(this._topEnabled && !this._bottomEnabled){
-					this.y = this._top;
+					this._y = this._top;
 				}else if(this._bottomEnabled && !this._topEnabled){
-					this.y = parentHeight - this._bottom - thisHeight;
+					this._y = parentHeight - this._bottom - thisHeight;
 				}else if(this._topEnabled && this._bottomEnabled){
-					this.y = this._top;
+					this._y = this._top;
 					thisHeight = parentHeight - this._top - this._bottom;
 				}
 				if(this._leftEnabled && !this._rightEnabled){
-					this.x = this._left;
+					this._x = this._left;
 				}else if(this._rightEnabled && !this._leftEnabled){
-					this.x = parentWidth - this._right - thisWidth;
+					this._x = parentWidth - this._right - thisWidth;
 				}else if(this._leftEnabled && this._rightEnabled){
-					this.x = this._left;
+					this._x = this._left;
 					thisWidth = parentWidth - this._left - this._right;
 				}
 				if(this._horizontalEnabled){
-					this.x = (parentWidth - thisWidth)/2 + this._horizontalCenter;
+					this._x = (parentWidth - thisWidth)/2 + this._horizontalCenter;
+					//console.log("this._horizontalEnabled=" + this._horizontalEnabled + ", x=" + this._x);
 				}
 				if(this._verticalEnabled){
-					this.y = (parentHeight - thisHeight)/2 + this._verticalCenter;
+					this._y = (parentHeight - thisHeight)/2 + this._verticalCenter;
+					//console.log("this._verticalEnabled=" + this._verticalEnabled + ", y=" + this._y);
 				}
 			}
 		}
@@ -419,7 +426,7 @@ module easy {
 		 * @returns {number}
 		 */
 		public get cx():number {
-			if (this._explicitWidth == NaN) return 0
+			if (this._explicitWidth == NaN) return 0;
 			return this._explicitWidth/2;
 		}
 		/**
@@ -427,7 +434,7 @@ module easy {
 		 * @returns {number}
 		 */
 		public get cy():number {
-			if (this._explicitHeight == NaN) return 0
+			if (this._explicitHeight == NaN) return 0;
 			return this._explicitHeight/2;
 		}
 		/**
@@ -525,6 +532,15 @@ module easy {
         }
         public get drawDelay():boolean {
             return this._drawDelay;
+        }
+
+		/**
+		 * 判断曾经加入过显示列表中
+		 * 可以用来判断各属性是否已经准备好显示和使用
+		 * @returns {boolean}
+		 */
+        public get isAddedToStage():boolean {
+            return this._isAddedToStage;
         }
     }
 }

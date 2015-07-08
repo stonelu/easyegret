@@ -131,19 +131,6 @@ module easy {
 		public get clip():boolean{
 			return this._clip;
 		}
-		///**
-		// *  Sets/gets the common scaleEnable of the bitmap.
-		// */
-		//public get scaleEnable():boolean{
-		//	return this._scaleEnable;
-		//}
-        //
-		//public set scaleEnable(value:boolean){
-		//	if (this._scaleEnable != value) {
-		//		this._scaleEnable = value;
-		//		this.invalidate();
-		//	}
-		//}
 		/**
 		 * 属性失效,需要下一帧重新绘制更新
 		 */

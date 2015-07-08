@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 module easy {
-    export class MovieClip extends BaseGroup {
+    export class MovieClip extends Group {
         private _imgDisplay:egret.Bitmap = null;
         //序列帧播放间隔时长
         private _fps:number = 1;
@@ -60,6 +60,7 @@ module easy {
             super.createChildren();
             this._imgDisplay = new egret.Bitmap();
             this.addChild(this._imgDisplay);
+            this.showBg = false;
         }
 
         /**
@@ -72,6 +73,7 @@ module easy {
             if (fps > 0 ) this._fps = fps;
             this._numFrameIndex = frame;
             if (easy.StringUtil.isUsage(this._animateName) || this._textures.length > 1) {
+                this.onChangeTexture();//先响应,防止延迟
                 HeartBeat.addListener(this, this.onChangeTexture, 1);
             } else {
                 this._imgDisplay.texture = this._textures[0];
@@ -134,6 +136,12 @@ module easy {
             this._animateName = null;
             this._callFunc = null;
             this._callThisArg = null;
+            this.anchorX = 0;
+            this.anchorY = 0;
+            this.anchorOffsetX = 0;
+            this.anchorOffsetY = 0;
+            this.verticalEnabled = false;
+            this.horizontalEnabled = false;
             if (this._imgDisplay)this._imgDisplay.texture = null;
         }
         /**
@@ -165,6 +173,7 @@ module easy {
             if (this._animateData) {
                 this._animateName = item.id;
                 this._fps = this._animateData.frame;
+                this.setSize(this._animateData.width, this._animateData.height);
             }
         }
         public get animateData():AnimateData {
@@ -218,6 +227,7 @@ module easy {
                 this.stop();
                 return;
             }
+            if (!this._imgDisplay) return;
             this._numFrammeCount ++;
             if (this._numFrammeCount >= this._fps) {
                 this._numFrammeCount = 0;
@@ -226,6 +236,8 @@ module easy {
             }
             if (this._textures){
                 this._imgDisplay.texture = this._textures[this._numFrameIndex];
+                this._imgDisplay.x = this.cx - this._imgDisplay.width/2;
+                this._imgDisplay.y = this.cy - this._imgDisplay.height/2;
                 this._numFrameIndex ++;
                 if (this._numFrameIndex >= this._textures.length){
                     if (!this._loop){
@@ -268,6 +280,7 @@ module easy {
          * 初始化声音对象,并播放声音
          */
         private onPlaySound():void {
+            if (!GlobalSetting.VOLUME_OPEN) return;
             if (this._sound == null && easy.StringUtil.isUsage(this._soundName)) {
                 this._sound = RES.getRes(this._soundName);
             }

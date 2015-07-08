@@ -222,9 +222,6 @@ module easy {
 			}
 		}
 
-        /**
-         * 聚焦
-         */
         public setFocus(){
             if(this._textField){
                 this._textField.setFocus();

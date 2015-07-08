@@ -62,14 +62,25 @@ module easy {
         //public _yOffsetSplit:number = 0;//切割y起始
         //文字部分的设定
         private _labelMarginLeft:number = 0;
-        private _setLabelMarginLeft:boolean = false;
+        private _labelMarginLeftEnable:boolean = false;
+        private _labelMarginTop:number = 0;
+        private _labelMarginTopEnable:boolean = false;
+        //icon设定
         private _iconMarginLeft:number = 0;
-        private _setIconMarginLeft:boolean = false;
+        private _iconMarginLeftEnable:boolean = false;
+        private _iconMarginTop:number = 0;
+        private _iconMarginTopEnable:boolean = false;
         /**
          * 适合材质的尺寸
          */
         private _autoSize:boolean = true;
         private _labelColor:number = Style.BUTTON_TEXT;
+        private _labelBold:boolean = false;//label加粗
+        private _labelItalic:boolean = false;
+        private _labelLineSpacing:number = 0;//行间距
+        private _labelMultiline:boolean = false;//多行显示
+        private _labelStroke:number = 0;
+        private _labelStrokeColor:number = 0x003350;
 
         //labe字体大小
         private _fontSize:number = 12;
@@ -102,15 +113,15 @@ module easy {
 
             //文字显示
             this._label = new Label(this.drawDelay);
-            this._label.width = this.width;
-            this._label.height = this.height;
+            this._label.autoSize = true;
+            this._label.clip = false;
             this._label.hAlign = egret.HorizontalAlign.CENTER;
             this._label.showBg = false;
 			this.addChild(this._label);
 
             this.addEventListener(egret.TouchEvent.TOUCH_BEGIN, this.onTouchEvent, this);
             this.addEventListener(egret.TouchEvent.TOUCH_END, this.onTouchEvent, this);
-            //this.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onTouchEvent, this);
+            this.addEventListener(egret.TouchEvent.TOUCH_RELEASE_OUTSIDE, this.onTouchRleaseOutside, this);
         }
         public onTouchEvent(event:egret.TouchEvent) : void {
             if (!this.enabled){
@@ -139,6 +150,17 @@ module easy {
                 }
             }
             this.invalidate();
+        }
+
+        /**
+         * 在外释放
+         * @param event
+         */
+        private onTouchRleaseOutside(event:egret.TouchEvent):void {
+            if(!StringUtil.isUsage(this._toggleGroup) || (StringUtil.isUsage(this._toggleGroup) && !this._selected)) {
+                this._currentState = Button.STATE_UP;
+                this.invalidate();
+            }
         }
         public get currentState():string{
             return this._currentState;
@@ -320,10 +342,17 @@ module easy {
                     this.addChild(this._imgLabel);
                 }
                 this._imgLabel.texture = this._textureLabel;
-                this._imgLabel.anchorOffsetX = this._imgLabel.width / 2;
-                this._imgLabel.anchorOffsetY = this._imgLabel.height / 2;
-				this._imgLabel.x = (this.width - this._imgLabel.width)/2 + this._imgLabel.width / 2;
-				this._imgLabel.y = (this.height - this._imgLabel.height)/2 + this._imgLabel.height / 2;
+
+                if(this._labelMarginLeftEnable){
+                    this._imgLabel.x = this._labelMarginLeft;
+                }else{
+                    this._imgLabel.x = (this.width - this._imgLabel.width)/2;
+                }
+                if (this._labelMarginTopEnable) {
+                    this._imgLabel.y = this._labelMarginTop;
+                } else {
+                    this._imgLabel.y = (this.height - this._imgLabel.height)/2;
+                }
 			}
 			if(this._textureIcon != null){//图标显示
                 if (this._imgIcon == null){
@@ -331,25 +360,42 @@ module easy {
                     this.addChild(this._imgIcon);
                 }
                 this._imgIcon.texture = this._textureIcon;
-				this._imgIcon.y = (this.height - this._imgIcon.height)/2;
-				if(this._setIconMarginLeft){
-					this._imgIcon.x = this._iconMarginLeft;
-				}
+
+                if(this._iconMarginLeftEnable){
+                    this._imgIcon.x = this._iconMarginLeft;
+                }else{
+                    this._imgIcon.x = (this.width - this._imgIcon.width)/2;
+                }
+                if (this._iconMarginTopEnable) {
+                    this._imgIcon.y = this._iconMarginTop;
+                } else {
+                    this._imgIcon.y = (this.height - this._imgIcon.height)/2;
+                }
 			}
 			if(this._label){
                 if (!this._label.parent) this.addChild(this._label);
                 this._label.text = this._text;
                 this._label.fontSize = this._fontSize;
                 this._label.fontName = this._fontName;
+                this._label.bold = this._labelBold;
+                this._label.italic = this._labelItalic;
+                this._label.lineSpacing = this._labelLineSpacing;
+                this._label.multiline = this._labelMultiline;
+                this._label.stroke = this._labelStroke;
+                this._label.strokeColor = this._labelStrokeColor;
                 this._label.onInvalidate(null);//立即生效,这样下面的数据才准
-                if(this._setLabelMarginLeft){
+
+                if(this._labelMarginLeftEnable){
                     this._label.x = this._labelMarginLeft;
-                    this._label.width -= this._labelMarginLeft;
                 }else{
-                    this._label.move((this.width - this._label.width)/2, (this.height - this._label.height)/2);
+                    this._label.x = (this.width - this._label.width)/2;
                     //console.log("Button.draw 222 this.width=" +this.width + ", this._label.width=" + this._label.width);
                 }
-                this._label.y = (this.height - this._label.height)/2;
+                if (this._labelMarginTopEnable) {
+                    this._label.y = this._labelMarginTop;
+                } else {
+                    this._label.y = (this.height - this._label.height)/2;
+                }
             }
 		}
 
@@ -376,11 +422,6 @@ module easy {
                 shape.graphics.lineTo(this.width-2, this.height-1);
                 shape.graphics.moveTo(1, this.height + 1);
                 shape.graphics.lineTo(this.width-2, this.height + 1);
-
-                //shape.graphics.moveTo(1, 2*this.height-1);
-                //shape.graphics.lineTo(this.width-2, 2*this.height-1);
-                //shape.graphics.moveTo(1, 2*this.height + 1);
-                //shape.graphics.lineTo(this.width-2, 2*this.height + 1);
 
                 var renderTexture:egret.RenderTexture = new egret.RenderTexture();
                 renderTexture.drawToTexture(shape);
@@ -416,9 +457,6 @@ module easy {
                         splietWidth = textureWidth/this.statesLength;
                         splietHeight = textureHeight;
                     }
-                    //console.log("splitTextureSource _bitmapWidth=" + this._texture._bitmapWidth + ", _bitmapHeight=" + this._texture._bitmapHeight + ", this.stateArray.length=" + this.stateArray.length)
-                    //console.log("splitTextureSource splietWidth=" + splietWidth + ", splietHeight=" + splietHeight + ", this.stateArray.length=" + this.stateArray.length)
-                    //console.log("splitTextureSource xOffset=" + xOffset + ", yOffset=" + yOffset + ", bitmapX=" + this._texture._bitmapX + ", bitmapY=" + this._texture._bitmapY)
                     var spriteSheet:egret.SpriteSheet = new egret.SpriteSheet(this._texture);
                     for (i = 0; i < this.stateArray.length; i++) {
                         if (this._verticalSplit) {
@@ -629,7 +667,6 @@ module easy {
         */
         public set labelMarginLeft(value:number){
             if (this._labelMarginLeft != value){
-                this._setLabelMarginLeft = true;
                 this._labelMarginLeft = value;
                 this.invalidate();
             }
@@ -637,10 +674,40 @@ module easy {
 		public get labelMarginLeft():number{
 			return this._labelMarginLeft;
 		}
+
+        public set labelMarginLeftEnable(value:boolean){
+            if (this._labelMarginLeftEnable != value) {
+                this._labelMarginLeftEnable = value;
+                this.invalidate();
+            }
+        }
+        public get labelMarginLeftEnable():boolean{
+            return this._labelMarginLeftEnable;
+        }
+
+        public set labelMarginTop(value:number){
+            if (this._labelMarginTop != value){
+                this._labelMarginTop = value;
+                this.invalidate();
+            }
+        }
+
+        public get labelMarginTop():number{
+            return this._labelMarginTop;
+        }
+
+        public set labelMarginTopEnable(value:boolean){
+            if (this._labelMarginTopEnable != value) {
+                this._labelMarginTopEnable = value;
+                this.invalidate();
+            }
+        }
+        public get labelMarginTopEnable():boolean{
+            return this._labelMarginTopEnable;
+        }
 		
 		public set iconMarginLeft(value:number){
             if (this._iconMarginLeft != value) {
-    			this._setIconMarginLeft = true;
     			this._iconMarginLeft = value;
     			this.invalidate();
             }
@@ -649,6 +716,33 @@ module easy {
 			return this._iconMarginLeft;
 		}
 
+        public set iconMarginLeftEnable(value:boolean){
+            if (this._iconMarginLeftEnable != value) {
+                this._iconMarginLeftEnable = value;
+                this.invalidate();
+            }
+        }
+        public get iconMarginLeftEnable():boolean{
+            return this._iconMarginLeftEnable;
+        }
+        public set iconMarginTop(value:number){
+            if (this._iconMarginTop != value) {
+                this._iconMarginTop = value;
+                this.invalidate();
+            }
+        }
+        public get iconMarginTop():number{
+            return this._iconMarginTop;
+        }
+        public set iconMarginTopEnable(value:boolean){
+            if (this._iconMarginTopEnable != value) {
+                this._iconMarginTopEnable = value;
+                this.invalidate();
+            }
+        }
+        public get iconMarginTopEnable():boolean{
+            return this._iconMarginTopEnable;
+        }
         /**
          * 设置按钮是否按照材质的宽高设置
          * true:按照切割后的材质,设置按钮的宽和高
@@ -695,13 +789,11 @@ module easy {
          * 初始化声音对象,并播放声音
          */
         private onPlaySound():void {
-            if (GlobalSetting.VOLUME_OPEN) {
-                if (this._sound == null && easy.StringUtil.isUsage(this._soundName)) {
-                    this._sound = RES.getRes(this._soundName);
-                }
-                if (this._sound) {
-                    this._sound.play();
-                }
+            if (this._sound == null && easy.StringUtil.isUsage(this._soundName)) {
+                this._sound = RES.getRes(this._soundName);
+            }
+            if (this._sound){
+                this._sound.play();
             }
         }
         /**
@@ -717,6 +809,86 @@ module easy {
         public set drawDelay(delay:boolean) {
             this._setDrawDelay(delay);
             if (this._label)this._label.drawDelay = delay;
+        }
+        /**
+         * label 加粗
+         * @param value
+         */
+        public set labelBold(value:boolean){
+            if (this._labelBold != value) {
+                this._labelBold = value;
+                this.invalidate();
+            }
+        }
+        public get labelBold():boolean{
+            return this._labelBold;
+        }
+
+        /**
+         * label 斜体
+         * @param value
+         */
+        public set labelItalic(value:boolean){
+            if (this._labelItalic != value) {
+                this._labelItalic = value;
+                this.invalidate();
+            }
+        }
+        public get labelItalic():boolean{
+            return this._labelItalic;
+        }
+
+        /**
+         * label 行间距
+         * @param value
+         */
+        public set labelLineSpacing(value:number){
+            if (this._labelLineSpacing != value) {
+                this._labelLineSpacing = value;
+                this.invalidate();
+            }
+        }
+        public get labelLineSpacing():number{
+            return this._labelLineSpacing;
+        }
+        /**
+         * label 多行显示
+         * @param value
+         */
+        public set labelMultiline(value:boolean){
+            if (this._labelMultiline != value) {
+                this._labelMultiline = value;
+                this.invalidate();
+            }
+        }
+        public get labelMultiline():boolean{
+            return this._labelMultiline;
+        }
+        /**
+         * label 描边厚度
+         * @param value
+         */
+        public set labelStroke(value:number){
+            if (this._labelStroke != value) {
+                this._labelStroke = value;
+                this.invalidate();
+            }
+        }
+        public get labelStroke():number{
+            return this._labelStroke;
+        }
+        /**
+         * label 描边颜色
+         * @param value
+         */
+        public set labelStrokeColor(value:number){
+            if (this._labelStrokeColor != value) {
+                this._labelStrokeColor = value;
+                this.invalidate();
+            }
+        }
+        public get labelStrokeColor():number{
+            return this._labelStrokeColor;
         }
     }
 }

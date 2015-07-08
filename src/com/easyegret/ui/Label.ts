@@ -39,9 +39,9 @@ module easy {
         private _italic:boolean = false;
 		private _lineSpacing:number = 0;//行间距
 		private _multiline:boolean = false;//多行显示
-        private _html:boolean = false;
         private _stroke:number = 0;
-        private _strokeColor:number = 0x003350;
+		private _strokeColor:number = 0x003350;
+		private _html:boolean = false;
 
 		private _autoSize:boolean = false;//根据文字自动调整Label的尺寸
 

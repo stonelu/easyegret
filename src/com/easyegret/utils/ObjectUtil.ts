@@ -14,13 +14,20 @@ module easy {
 
             if (src && target) {
                 for (var key in src){
-                    console.log("000key=" + key + ", value=" + src[key]);
+                    //console.log("000key=" + key + ", value=" + src[key]);
                     if (target.hasOwnProperty(key)) {
                         target[key] = src[key];
                         console.log("1111key=" + key + ", value=" + src[key]);
                     }
                 }
             }
+        }
+
+        public static functionExist(thisArg:any, functionName:string):boolean{
+            if (thisArg && typeof(thisArg[functionName]) == "function"){
+                return true;
+            }
+            return false;
         }
     }
 }

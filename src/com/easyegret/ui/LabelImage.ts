@@ -61,7 +61,7 @@ module easy {
         private _soundName:string = null;
         private _sound:egret.Sound = null;
 
-        public _rollingEffect:EffectNumberRolling = null;
+        private _rollingEffect:EffectNumberRolling = null;
 
         public constructor(drawDelay:boolean = false) {
             super(drawDelay);
@@ -284,7 +284,6 @@ module easy {
         //上一次分解好的字符串
         private _isSplitInit:boolean = false;
         private _splitStr:Array<any> = [];
-        private _srcStr:string = null;
         private _typeStr:Array<boolean> = [];//记录每个位置的num=true
         public constructor(lableImg:LabelImage) {
             this._labelImg = lableImg;
@@ -293,12 +292,10 @@ module easy {
             //console.log("x=" + this._xOld + ", y=" + this._yOld)
         }
         public setText(str:string){
-            //console.log("目标str=" +str + ", this._srcStr=" + this._srcStr);
+            //console.log("目标str=" +str);
             if (this._rollingText.length > 0){
-                this._labelImg.text = this._srcStr;
+                this._labelImg.text = this._rollingText[this._rollingText.length -1];
             }
-            this._isSplitInit = false;
-            this._srcStr = str;
             this._rollingText.length = 0;
             this._typeStr.length = 0;
             var tempSpliteStr:Array<string> = [];
@@ -400,29 +397,24 @@ module easy {
                 //console.log("step.str=" + stepStr)
                 this._rollingText.push(stepStr);
             }
-            //console.log("_rollingText=" + this._rollingText)
             //保存这次的值
-            if (this._rollingText && this._rollingText.length > 0){
-                this._splitStr = tempSpliteValue;
-                this._isSplitInit = true;
+            this._splitStr = tempSpliteValue;
+            this._isSplitInit = true;
 
-                HeartBeat.addListener(this, this.onChangeText, 2);
+            HeartBeat.addListener(this, this.onChangeText, 2);
 
-                if (this.zoomEnable && !this._isZoom && this.zoomX != this._labelImg.scaleX && this.zoomY != this._labelImg.scaleY){
-                    this._isZoom = true;
-                    this._zoomXOld = this._labelImg.scaleX;
-                    this._zoomYOld = this._labelImg.scaleY;
-                    var paramObj:Object = {scaleX:this.zoomX, scaleY:this.zoomY};
-                    if (this._labelImg.anchorX == 0 && this._labelImg._anchorOffsetX == 0){
-                        paramObj["x"] = - Math.round(this._labelImg.cx);
-                    }
-                    if (this._labelImg.anchorY == 0 && this._labelImg._anchorOffsetY == 0){
-                        paramObj["y"] = - Math.round(this._labelImg.cy);
-                    }
-                    egret.Tween.get(this._labelImg).to(paramObj, 400, egret.Ease.bounceInOut);
+            if (this.zoomEnable && !this._isZoom && this.zoomX != this._labelImg.scaleX && this.zoomY != this._labelImg.scaleY){
+                this._isZoom = true;
+                this._zoomXOld = this._labelImg.scaleX;
+                this._zoomYOld = this._labelImg.scaleY;
+                var paramObj:Object = {scaleX:this.zoomX, scaleY:this.zoomY};
+                if (this._labelImg.anchorX == 0 && this._labelImg._anchorOffsetX == 0){
+                    paramObj["x"] = - Math.round(this._labelImg.cx);
                 }
-            } else {
-                this._labelImg.text = this._srcStr;
+                if (this._labelImg.anchorY == 0 && this._labelImg._anchorOffsetY == 0){
+                    paramObj["y"] = - Math.round(this._labelImg.cy);
+                }
+                egret.Tween.get(this._labelImg).to(paramObj, 400, egret.Ease.bounceInOut);
             }
         }
 

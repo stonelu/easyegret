@@ -34,6 +34,189 @@ module easy{
         public static SCROLL_LEFT:string = "left";
         public static SCROLL_RIGHT:string = "right";
 
+        public static STATE_START:string = "start";
+        public static STATE_STOP:string = "stop";
+
+
+        private _scrollItemArr:Array<ScrollItemGroup> = [];
+
+        /**
+         * 是否将子代剪切到视区的边界,
+         * 默认为true,剪切.
+         */
+        private _clip:boolean = false;
+
+        /**
+         * 运行状态
+         * @type {boolean}
+         * @private
+         */
+        private _runing:boolean = false;
+
+        public constructor(delay:boolean=false) {
+            super(delay);
+        }
+
+        /**
+         * 初始化主场景的组件
+         * 这个方法在对象new的时候就调用,因为有些ui必须在加入stage之前就准备好
+         * 子类覆写该方法,添加UI逻辑
+         */
+        public createChildren():void {
+            super.createChildren();
+            this.clip = true;
+        }
+
+        /**
+         * 设置卷轴数据
+         * @param textures
+         * @param speed
+         */
+        public setScrollData(textures:Array<egret.Texture>, speed:number = 3, direction:string = ScrollGroup.SCROLL_DOWN, width:number = 0, height:number = 0, offset:number = 0):void {
+            var item:ScrollItemGroup = ObjectPool.getByClass(ScrollItemGroup);
+            this.addChild(item);
+            if (direction == ScrollGroup.SCROLL_DOWN || direction == ScrollGroup.SCROLL_UP ){
+                item.x = offset;
+            } else {
+                item.y = offset;
+            }
+            this._scrollItemArr.push(item);
+            item.setScrollData(textures, speed);
+            item.direction = direction;
+            if (width > 0) {
+                item.width = width;
+            }
+            if (height > 0) {
+                item.height = height;
+            }
+            this.invalidate();
+        }
+
+        /**
+         * 开始卷轴
+         */
+        public start(index:number = -1):void {
+            this._runing = true;
+            this.setItemState(ScrollGroup.STATE_START, index);
+            //初始数据
+            HeartBeat.addListener(this, this.onHeartBeat);
+        }
+
+        /**
+         * 停止卷轴
+         */
+        public stop(index:number = -1):void {
+            this.setItemState(ScrollGroup.STATE_STOP, index);
+            if (!this._runing)HeartBeat.removeListener(this, this.onHeartBeat);
+        }
+        /**
+         * 暂停卷轴
+         */
+        public pause(index:number = -1):void {
+            this.setItemState(ScrollGroup.STATE_STOP, index);
+            if (!this._runing)HeartBeat.removeListener(this, this.onHeartBeat);
+        }
+
+        /**
+         * 重新卷轴卷轴
+         */
+        public restart(index:number = -1):void {
+            this.setItemState(ScrollGroup.STATE_START, index);
+            HeartBeat.addListener(this, this.onHeartBeat);
+        }
+
+        /**
+         * 设置速度
+         */
+        public setSpeed(speed:number, index:number = -1):void {
+            if (index <= -1) {
+                for(var i:number = 0; i < this._scrollItemArr.length; i++){
+                    this._scrollItemArr[i].speed = speed;
+                }
+            } else {
+                if (index >= 0 && index <= this._scrollItemArr.length -1){
+                    this._scrollItemArr[index].speed = speed;
+                }
+            }
+        }
+
+        /**
+         * 设置滚动item的state
+         * @param state
+         */
+        private setItemState(state:string, index:number = -1):void {
+            if (index <= -1) {
+                for(var i:number = 0; i < this._scrollItemArr.length; i++){
+                    this._scrollItemArr[i]._state = state;
+                }
+            } else if (index >= 0 && index <= this._scrollItemArr.length -1) {
+                this._scrollItemArr[index]._state = state;
+            }
+            if (state == ScrollGroup.STATE_START) {
+                this._runing = true;
+            } else {
+                this._runing = false;
+                for(var i:number = 0; i < this._scrollItemArr.length; i++){
+                    if (this._scrollItemArr[i]._state = ScrollGroup.STATE_START) {
+                        this._runing = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+
+        /**
+         * 呼吸计数
+         */
+        private onHeartBeat():void {
+            for(var i:number = 0; i < this._scrollItemArr.length; i++){
+                this._scrollItemArr[i].onHeartBeat();
+            }
+        }
+
+        /**
+         * 重绘
+         */
+        public draw():void{
+            if (this.width == 0 || this.height == 0) return;
+            if(this._clip){//剪裁
+                if (this.scrollRect == null){
+                    this.scrollRect = new egret.Rectangle(0, 0, this.width, this.height);
+                } else {
+                    this.scrollRect.width = this.width;
+                    this.scrollRect.height = this.height;
+                }
+            }else{
+                this.scrollRect = null;
+            }
+            if (this.width != 100 || this.height != 100) {
+                for(var i:number = 0; i < this._scrollItemArr.length; i++){
+                    if (this._scrollItemArr[i].width == 100 || this._scrollItemArr[i].width == 0) {
+                        this._scrollItemArr[i].width = this.width;
+                    }
+                    if (this._scrollItemArr[i].height == 100 || this._scrollItemArr[i].height == 0) {
+                        this._scrollItemArr[i].height = this.height;
+                    }
+                    this._scrollItemArr[i]._initData = false;
+                }
+            }
+        }
+        /**
+         * 设置剪裁
+         * @param value
+         */
+        public set clip(value:boolean){
+            if(value != this._clip){
+                this._clip = value;
+                this.invalidate();
+            }
+        }
+        public get clip():boolean{
+            return this._clip;
+        }
+    }
+    class ScrollItemGroup extends BaseGroup {
         public speed:number = 0;//帧速度
         public direction:string = ScrollGroup.SCROLL_DOWN;//卷轴的方向
         private _textures:Array<egret.Texture> = null;//卷轴的背景材料
@@ -41,6 +224,15 @@ module easy{
         private _scrollTextureIndex:number = 0;///卷轴的下标
 
         private _scrollBitmapArr:Array<egret.Bitmap> = null;//卷轴图像
+
+        public _state:String = easy.ScrollGroup.STATE_STOP;
+
+        public _initData:boolean = false;//初始化数据
+        /**
+         * 是否将子代剪切到视区的边界,
+         * 默认为true,剪切.
+         */
+        private _clip:boolean = false;
 
 
         public constructor(delay:boolean=false) {
@@ -70,38 +262,11 @@ module easy{
         }
 
         /**
-         * 开始卷轴
-         */
-        public start():void {
-            //初始数据
-            this.initScrollBitmapData();
-            HeartBeat.addListener(this, this.onHeartBeat);
-        }
-
-        /**
-         * 停止卷轴
-         */
-        public stop():void {
-            HeartBeat.removeListener(this, this.onHeartBeat);
-        }
-        /**
-         * 暂停卷轴
-         */
-        public pause():void {
-            HeartBeat.removeListener(this, this.onHeartBeat);
-        }
-
-        /**
-         * 重新卷轴卷轴
-         */
-        public restart():void {
-            HeartBeat.addListener(this, this.onHeartBeat);
-        }
-
-        /**
          * 初始化初始卷轴数据
          */
         private initScrollBitmapData():void{
+            if (this._initData || this._state == easy.ScrollGroup.STATE_STOP) return;
+            this._initData = true;
             if (this.direction == ScrollGroup.SCROLL_UP) {
                 this._scrollBitmapArr[0].x = 0;
                 this._scrollBitmapArr[1].x = 0;
@@ -166,11 +331,12 @@ module easy{
             return texture;
         }
 
-
         /**
          * 呼吸计数
          */
-        private onHeartBeat():void {
+        public onHeartBeat():void {
+            if (this._state == easy.ScrollGroup.STATE_STOP) return;
+            if (!this._initData) this.initScrollBitmapData();
             if (this.direction == ScrollGroup.SCROLL_UP) {
                 this._scrollBitmapArr[0].y -= this.speed;
                 this._scrollBitmapArr[1].y -= this.speed;
@@ -215,5 +381,35 @@ module easy{
                 }
             }
         }
-   }
+
+        /**
+         * 重绘
+         */
+        public draw():void{
+            if (this.width == 0 || this.height == 0) return;
+            if(this._clip){//剪裁
+                if (this.scrollRect == null){
+                    this.scrollRect = new egret.Rectangle(0, 0, this.width, this.height);
+                } else {
+                    this.scrollRect.width = this.width;
+                    this.scrollRect.height = this.height;
+                }
+            }else{
+                this.scrollRect = null;
+            }
+        }
+        /**
+         * 设置剪裁
+         * @param value
+         */
+        public set clip(value:boolean){
+            if(value != this._clip){
+                this._clip = value;
+                this.invalidate();
+            }
+        }
+        public get clip():boolean{
+            return this._clip;
+        }
+    }
 }

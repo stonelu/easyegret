@@ -26,15 +26,20 @@
  */
 module easy {
 
-	export class DefaultListItemRenderer extends Group{
-		public _label:Label = null;
-		public _defaultColor:number = Style.BACKGROUND;
-		public _selectedColor:number = 0xdddddd;
-		public _rolloverColor:number = Style.BUTTON_DOWN;
-		public _selected:boolean;
-		public _mouseOver:boolean = false;
-        public _index:number = 0;
-		public _labelField:string = null;
+	export class DefaultRenderer extends Group{
+		/**
+		 * 对应的ui展现
+		 */
+		public _ui:BaseGroup = null;
+		/**
+		 * ui资源已准备好
+		 * @type {boolean}
+		 * @private
+		 */
+		public _uiResReady:boolean = false;
+
+		private _selected:boolean;
+		private _labelField:string = null;
 		public constructor(){
 			super();
 		}
@@ -42,29 +47,6 @@ module easy {
 		public createChildren():void{
 			super.createChildren();
             this.setSize(100, 65);
-			this._label = new Label();
-			this._label.x = 5;
-			this._label.y = 0;
-			this.addChild(this._label);
-			this._label.showBg = false;
-			this._label.draw();
-			this.showBg = true;
-		}
-
-		/**
-		 * Draws the visual ui of the component.
-		 */
-		public draw() : void{
-			if(this._data == null) return;
-			if (StringUtil.isUsage(this._labelField) && this._data[this._labelField]){
-				this._label.text = this._data[this._labelField];
-			} else {
-				this._label.text = this._data;
-			}
-			if (this._selected){
-				this._label.text = "selected"
-			}
-			super.draw();
 		}
 
 		/**
@@ -78,10 +60,13 @@ module easy {
 		 * 设置选中
 		 */
 		public set selected(value:boolean){
-            if (this._selected != value) {
-    			this._selected = value;
-    			this.invalidate();
-            }
+			this.setSelected(value);
+		}
+		public setSelected(value:boolean){
+			if (this._selected != value) {
+				this._selected = value;
+				this.invalidate();
+			}
 		}
 		public get selected():boolean{
 			return this._selected;
@@ -96,6 +81,48 @@ module easy {
     			this._labelField = value;
     			this.invalidate();
             }
+		}
+		/**
+		 * 获取ui层的显示对象
+		 * @returns {egret.Sprite}
+		 */
+		public getUI():any {
+			return this._ui;
+		}
+		/**
+		 * 设置ui层的显示对象
+		 * @param myui
+		 */
+		public setUI(myui:BaseGroup) {
+			this._ui = myui;
+			//console.log("!!!view set ui!! 000 this._ui=" + egret.getQualifiedClassName(this._ui));
+			if (this._ui) {
+				this.addChild(this._ui);
+				this.setSize(this._ui.width, this._ui.height);
+				//console.log("!!!view set ui!! 1111 this._ui=" + egret.getQualifiedClassName(this._ui));
+			}
+			this.showBg = false;
+		}
+		/**
+		 * 做ui的销毁
+		 * 一般情况下,需要手动调用销毁
+		 */
+		public destroy():void {
+			if (this._ui){
+				//if (this._ui.hasOwnProperty("destroy"))this._ui.destroy();
+				this._ui = null;
+			}
+		}
+		/**
+		 * 首次材质下载完成会调用加载一次,刷新UI皮肤显示
+		 * 使用了框架的UI机制,单ui的资源下载完成会调用改方法刷新
+		 * 若view中有逻辑使用到ui的素材,应该在这里做素材的赋值
+		 */
+		public validateNow():void{
+			//console.log("clz=" + egret.getQualifiedClassName(this)  + ", validateNow!!")
+			if (this._ui && this._ui["validateNow"]) this._ui["validateNow"]();
+			this.drawDelay = false;
+			if (this._ui)this._ui.drawDelay = false;
 		}
 	}
 }
