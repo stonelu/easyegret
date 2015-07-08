@@ -52,7 +52,7 @@ module easy {
         private _autoScrollGap:number = 0;//自动滚动的间距
         private _lastTimeNum:number = 0;//
 
-        private _selectedItem:any = null;//选择的对象
+        private _selected:any = null;//选择的对象
         private _labelField:string = "";
 
 		public constructor(drawDelay:boolean = false){
@@ -196,7 +196,7 @@ module easy {
                     sp = this._itemContainer.getChildAt(i);
                     if (sp.x < event.localX && sp.y < event.localY && sp.x + sp.width > event.localX && sp.y + sp.height > event.localY){
                         try{
-                            this.selectedItem = sp["_data"];
+                            this.selected = sp["_data"];
                             break;
                         } catch(e) {
                         }
@@ -219,6 +219,10 @@ module easy {
             }
             try{
                 render["data"] = null;
+            } catch (e){
+            }
+            try{
+                render["list"] = null;
             } catch (e){
             }
             if (render && render.parent) render.parent.removeChild(render);
@@ -323,6 +327,10 @@ module easy {
                 }
                 try{
                     displayItemUI["data"] = this._itemDatas[dataIndex];
+                }catch(e){
+                }
+                try{
+                    displayItemUI["list"] = this;
                 }catch(e){
                 }
                 if (this._autoSize){
@@ -443,10 +451,10 @@ module easy {
         public get layout():string {
             return this._direction;
         }
-        public set selectedItem(item:any){
+        public set selected(item:any){
             //console.log("selectedItem item=" + item)
             var sp:egret.DisplayObject = null;
-            this._selectedItem = item;
+            this._selected = item;
             for(var i:number = 0; i < this._itemContainer.numChildren;i++){
                 sp = this._itemContainer.getChildAt(i);
                 sp["selected"] = false;
@@ -458,8 +466,19 @@ module easy {
                 }
             }
         }
-        public get selectedItem():any {
-            return this._selectedItem;
+        public get selected():any {
+            return this._selected;
+        }
+
+        /**
+         * 获取选择对象的index
+         * @returns {number}
+         */
+        public get selectedIndex():number {
+            if (this._selected){
+                return this._data.indexOf(this._selected)
+            }
+            return -1
         }
         public get labelField():string{
             return this._labelField;
