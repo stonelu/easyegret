@@ -102,7 +102,7 @@ module easy{
          * @param packet
          */
         public receivePacket(packet:Packet):void {
-            if (this.METHOD_DEF["" + packet.header.messageId])this["onPacket" + this.METHOD_DEF[packet.header.messageId]].call(this, packet);
+            if (this.METHOD_DEF["" + packet.header.messageId] && this["onPacket" + this.METHOD_DEF[packet.header.messageId]])this["onPacket" + this.METHOD_DEF[packet.header.messageId]].call(this, packet);
         }
 
         /**
@@ -111,7 +111,7 @@ module easy{
          */
         public receiveEvent(event:MyEvent):void {
             //console.log("ReceiveGroup this=" + egret.getQualifiedClassName(this) + ", receiveEvent=" + event.type + ", isHas=" + this.METHOD_DEF[event.type]);
-            if (this.METHOD_DEF[event.type]) this["onEvent" + this.METHOD_DEF[event.type]].call(this, event);
+            if (this.METHOD_DEF[event.type] && this["onEvent" + this.METHOD_DEF[event.type]]) this["onEvent" + this.METHOD_DEF[event.type]].call(this, event);
         }
         /**
          * 初始化主场景的组件

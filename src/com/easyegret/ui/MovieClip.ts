@@ -161,7 +161,7 @@ module easy {
          */
         public set animateName(name:string) {
             this._animateName = name;
-            this.animateData = AnimateManager.getAnimateData(name);
+            this.animateData = null;
         }
 
         /**
