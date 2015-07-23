@@ -105,8 +105,8 @@ module easy {
 		}
         public get width():number {
 			//console.log("@@@BaseGroup =" + this._explicitWidth);
-			if (this._explicitWidth == NaN || this._explicitWidth == undefined) return 0;
-            return this._explicitWidth;
+			if (this.explicitWidth == NaN || this.explicitWidth == undefined) return 0;
+            return this.explicitWidth;
 		}
 		public set height(h:number){
 			if(h > 0){
@@ -115,8 +115,8 @@ module easy {
 			}
 		}
 		public get height():number {
-			if (this._explicitHeight == NaN || this._explicitHeight == undefined) return 0;
-			return this._explicitHeight;
+			if (this.explicitHeight == NaN || this.explicitHeight == undefined) return 0;
+			return this.explicitHeight;
         }
 
         /**
@@ -309,7 +309,7 @@ module easy {
 				var thisHeight:number = this.height;
 				//为了保证得到的宽高是数值型,这里进行了严格的检测
 				if (parentWidth == NaN || parentWidth == undefined){
-					parentWidth = p._explicitWidth;
+					parentWidth = p.explicitWidth;
 					if (parentWidth == NaN || parentWidth == undefined){
 						parentWidth = p.measuredWidth;
 					}
@@ -318,7 +318,7 @@ module easy {
 					}
 				}
 				if (parentHeight == NaN || parentHeight == undefined){
-					parentHeight = p._explicitHeight;
+					parentHeight = p.explicitHeight;
 					if (parentHeight == NaN || parentHeight == undefined){
 						parentHeight = p.measuredHeight;
 					}
@@ -327,7 +327,7 @@ module easy {
 					}
 				}
 				if (thisWidth == NaN || thisWidth == undefined){
-					thisWidth = this._explicitWidth;
+					thisWidth = this.explicitWidth;
 					if (thisWidth == NaN || thisWidth == undefined){
 						thisWidth = this.measuredWidth;
 					}
@@ -336,7 +336,7 @@ module easy {
 					}
 				}
 				if (thisHeight == NaN || thisHeight == undefined){
-					thisHeight = this._explicitHeight;
+					thisHeight = this.explicitHeight;
 					if (thisHeight == NaN || thisHeight == undefined){
 						thisHeight = this.measuredHeight;
 					}
@@ -346,27 +346,27 @@ module easy {
 				}
 
 				if(this._topEnabled && !this._bottomEnabled){
-					this._y = this._top;
+					this.y = this._top;
 				}else if(this._bottomEnabled && !this._topEnabled){
-					this._y = parentHeight - this._bottom - thisHeight;
+					this.y = parentHeight - this._bottom - thisHeight;
 				}else if(this._topEnabled && this._bottomEnabled){
-					this._y = this._top;
+					this.y = this._top;
 					thisHeight = parentHeight - this._top - this._bottom;
 				}
 				if(this._leftEnabled && !this._rightEnabled){
-					this._x = this._left;
+					this.x = this._left;
 				}else if(this._rightEnabled && !this._leftEnabled){
-					this._x = parentWidth - this._right - thisWidth;
+					this.x = parentWidth - this._right - thisWidth;
 				}else if(this._leftEnabled && this._rightEnabled){
-					this._x = this._left;
+					this.x = this._left;
 					thisWidth = parentWidth - this._left - this._right;
 				}
 				if(this._horizontalEnabled){
-					this._x = (parentWidth - thisWidth)/2 + this._horizontalCenter;
+					this.x = (parentWidth - thisWidth)/2 + this._horizontalCenter;
 					//console.log("this._horizontalEnabled=" + this._horizontalEnabled + ", x=" + this._x);
 				}
 				if(this._verticalEnabled){
-					this._y = (parentHeight - thisHeight)/2 + this._verticalCenter;
+					this.y = (parentHeight - thisHeight)/2 + this._verticalCenter;
 					//console.log("this._verticalEnabled=" + this._verticalEnabled + ", y=" + this._y);
 				}
 			}
@@ -397,18 +397,18 @@ module easy {
         public clean():void {
             
         }
-		public set x(value:number){
-			super._setX(value);
-		}
-		public get x():number {
-			return this._x;
-		}
-		public set y(value:number){
-			super._setY(value);
-		}
-		public get y():number{
-			return this._y;
-		}
+		//public set x(value:number){
+		//	super._setX(value);
+		//}
+		//public get x():number {
+		//	return this.x;
+		//}
+		//public set y(value:number){
+		//	super._setY(value);
+		//}
+		//public get y():number{
+		//	return this.y;
+		//}
         /**
         * 设置enabled状态
         * @return
@@ -426,16 +426,16 @@ module easy {
 		 * @returns {number}
 		 */
 		public get cx():number {
-			if (this._explicitWidth == NaN) return 0;
-			return this._explicitWidth/2;
+			if (this.explicitWidth == NaN) return 0;
+			return this.explicitWidth/2;
 		}
 		/**
 		 * 中心y位置
 		 * @returns {number}
 		 */
 		public get cy():number {
-			if (this._explicitHeight == NaN) return 0;
-			return this._explicitHeight/2;
+			if (this.explicitHeight == NaN) return 0;
+			return this.explicitHeight/2;
 		}
 		/**
 		 * 从场景中移除改对象
@@ -476,15 +476,15 @@ module easy {
 		 */
 		public getRegPoint():egret.Point{
 			var regPoint:egret.Point = new egret.Point();
-			if (this._anchorX != 0){
-				regPoint.x = this.width*this._anchorX;
-			} else if (this._anchorOffsetX != 0) {
-				regPoint.x = this._anchorOffsetX;
+			if (this.anchorX != 0){
+				regPoint.x = this.width*this.anchorX;
+			} else if (this.anchorOffsetX != 0) {
+				regPoint.x = this.anchorOffsetX;
 			}
-			if (this._anchorY != 0){
-				regPoint.y = this.height*this._anchorY;
-			} else if (this._anchorOffsetX != 0) {
-				regPoint.y = this._anchorOffsetY;
+			if (this.anchorY != 0){
+				regPoint.y = this.height*this.anchorY;
+			} else if (this.anchorOffsetX != 0) {
+				regPoint.y = this.anchorOffsetY;
 			}
 			return regPoint;
 		}

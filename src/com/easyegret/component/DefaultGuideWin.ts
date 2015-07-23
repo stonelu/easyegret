@@ -1,5 +1,5 @@
-ï»¿/**
- * Copyright (c) 2014,Egret-Labs.org
+/**
+ * Copyright (c) 2014,www.easyegret.com
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,7 +32,7 @@ module easy {
         }
 
         /**
-         * åˆ›å»ºå¯¹è±¡
+         * ´´½¨¶ÔÏó
          */
         public createChildren():void {
             super.createChildren();
@@ -43,38 +43,34 @@ module easy {
             return null;
         }
         /**
-         * è¿›å…¥çš„é€»è¾‘
-         * å¯ä»¥å†æ¬¡æ ¹æ®å¤–éƒ¨æ•°æ®æƒ…å†µåšä¸€äº›é€»è¾‘å¤„ç†
+         * ½øÈëµÄÂß¼­
+         * ¿ÉÒÔÔÙ´Î¸ù¾İÍâ²¿Êı¾İÇé¿ö×öÒ»Ğ©Âß¼­´¦Àí
          */
         public enter():void {
             super.enter();
             if (this._data){
-                this.applyClickModel();
+                easy.HeartBeat.addListener(this, this.applyClickModel, 2,1);
             }
         }
 
         /**
-         * åº”ç”¨ç‚¹å‡»æ–¹å¼
+         * Ó¦ÓÃµã»÷·½Ê½
          */
         public applyClickModel():void {
-            if (this._data && this.guideItem.click_stage == 1){//å…¨å±€ç‚¹å‡»,è§¦å‘ä¸‹ä¸€ä¸ªèŠ‚ç‚¹
+            if (this._data && this.guideItem.click_stage == 1){//È«¾Öµã»÷,´¥·¢ÏÂÒ»¸ö½Úµã
                 GlobalSetting.STAGE.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onClickStage, this);
             }
         }
 
         /**
-         * ç‚¹å‡»èˆå°åŠ¨ä½œ,æ’­æ”¾ä¸‹ä¸€ä¸ªèŠ‚ç‚¹
+         * µã»÷ÎèÌ¨¶¯×÷,²¥·ÅÏÂÒ»¸ö½Úµã
          * @param event
          */
         private onClickStage(event:egret.TouchEvent):void {
+            if (event._currentTarget != GlobalSetting.STAGE) return;
             GlobalSetting.STAGE.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.onClickStage, this);
-            var nextId:string = this.guideItem.next_frame;
-            if (easy.StringUtil.isUsage(nextId) && GuideManager.guide_item_dict[nextId]){
-                GuideManager.play(nextId);
-            } else {
+            if (!GuideManager.playNextItem()) {
                 PopupManager.hidden(this);
-                //éšè—é®å¹…
-                GuideManager.hiddenCropping();
             }
         }
     }

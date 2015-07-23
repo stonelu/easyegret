@@ -115,5 +115,19 @@ module easy {
                 return null;
             }
         }
+
+        /**
+         * 产生一个 a 到 b 之间的随机数（默认是 a 不包括 b的整数）：
+         * @param a
+         * @param b
+         * @param isInt 是否是整数
+         */
+        public static random(a:number, b:number, isInt:boolean = true):number {
+            if(isInt){
+                return Math.floor(a + (b - a) * Math.random());
+            }else{
+                return a + (b - a) * Math.random();
+            }
+        }
     }
 }

@@ -4,27 +4,21 @@
 module easy {
 
 	export class MySocket {
-        //是否websocket
-        private _isWebSocket:boolean = false;
-        public host:string = null;
-        public port:number = 0;
-        private _webSocket:egret.WebSocket = null;
-        //public _socket:egret.Socket = null;
+        //public _socket:Socket = null;
         //private _initListener:boolean = false;
+        //public currentIp:string = null;
+        //public currentPort:number = 0;
         //public _gatewayStatus:boolean = false;
-        private rawByteArrayCache:Array<egret.ByteArray> = new Array<egret.ByteArray>();//row byte数据包
-        public packcetByteArrayCache:Array<egret.ByteArray> = new Array<egret.ByteArray>();//packet byte数据包
-        public packcetSendCache:Array<Packet> = new Array<Packet>();//packet 发送数据包
-        //默认的解析类,外部可以在发送之前设置改变
-        public decodeClass:any = DefaultDecoder;
-        //默认的编码类,外部可以在发送之前设置改变
-        public encodeClass:any = DefaultEncoder;
-        //字节序
-        public static ENDIAN:string = egret.Endian.BIG_ENDIAN;
-        //登陆包缓存,方便自动重新登陆,要主动设置
-        public  loginPkt:Packet = null;
-        //在自动连接的情况下,connet需要一定的时间来握手,这是等待握手成功的计数,发送延迟计数
-        private  autoConnectDuration:number = 0;
+        //public rawByteArrayCache:Array<ByteArray> = new Array<ByteArray>();//row byte数据包
+        //public packcetByteArrayCache:Array<ByteArray> = new Array<ByteArray>();//packet byte数据包
+        //public packcetSendCache:Array<Packet> = new Array<Packet>();//packet 发送数据包
+        //public decodeClass:any = DefaultDecoder;
+        //public encodeClass:any = DefaultEncoder;
+        //public ENDIAN:string = Endian.BIG_ENDIAN;
+        //public isAuthorized:boolean = false;//是否已经通过授权,连接完成后要侧重检查一下第一个包是否是授权文件
+        //public  AUTHORIZED_LENGTH:number = 162;//授权文件的长度,现在默认是162
+        //public  loginPkt:Packet = null;
+        //private  pktDuration:number = 0;//发送延迟计数
 
         //待发送的协议缓存列表,设置这个的目的是为了解耦同步调用
         private _packetSendCache:Array<Packet> = [];
@@ -47,142 +41,169 @@ module easy {
          */
         public send(pkt:Packet):void {
             if(pkt){
-                //校验断线的情况下,重连
-                this.autoRelogin();
                 this._packetSendCache.push(pkt);
-                easy.HeartBeat.addListener(this, this.checkPacketByteArray)
+                easy.HeartBeat.addListener(this, this.onFireSendPacket)
+            }
+        }
+        //发送协议
+        private onFireSendPacket():void {
+            if(this._packetSendCache.length > 0 ) {
+                var pkt:Packet = this._packetSendCache.shift();
+                //暂时转到control处理
+                var myEvent:MyEvent = MyEvent.getEvent("server_pkt");
+                myEvent.addItem("pkt", pkt);
+                myEvent.send();
+            }
+            if (this._packetSendCache.length == 0) {
+                easy.HeartBeat.removeListener(this, this.onFireSendPacket)
             }
         }
 
-        /**
-         * 自动重新连接
-         */
-        private autoRelogin():void {
-            //if (this.currentPort > 0 && !this.isConnected() && this.loginPkt != null) {
-            //    this.connect(this.currentIp, this.currentPort);
-            //    if (this.loginPkt != null) {
-            //        //自动发送登录包
-            //        var encoder:DefaultEncoder = ObjectPool.getObjectClass(this.encodeClass);
-            //        var outBytes:ByteArray = encoder.encoder(this.loginPkt);
-            //        ObjectPool.releaseClass(encoder);
-            //        this._socket.writeBytes(outBytes, 0, outBytes.length);
-            //        this._socket.flush();
-            //        Debug.log = HexUtil.dump(outBytes);
-            //        outBytes.clear();
-            //        ObjectPool.releaseClass(outBytes);
-            //        //设置发送延迟
-            //        this.autoConnectDuration = 4*30;
-            //    }
-            //}
-        }
-
-        /**
-         * 连接
-         * @param host 服务器地址
-         * @param port 服务器断开
-         * @param websocket 是否websocket连接方式
-         */
-        public connect(host:string, port:number, websocket:boolean = true):void {
-            this._isWebSocket = websocket;
-            Debug.log = "@连接　host＝" + host + ", port=" + port;
-            this.host = host;
-            this.port = port;
-            if (this.port <=0 || !easy.StringUtil.isUsage(this.host)) {
-                Debug.log = "[ERROR] port=" + this.port + ", host=" + this.host + ",不合法,无法连接!";
-                return;
-            }
-            if (this._isWebSocket){
-                this.connetWebSockt();
+        /*
+        public  initListener(newSocket:Socket = null):void {
+            if (this._initListener) return;
+            Debug.log = "@initListener,新建socket!";
+            this.isAuthorized = false;
+            this.authorize_remain_length = this.AUTHORIZED_LENGTH;
+            if (newSocket ==  null){
+                this._socket = new Socket();
             } else {
-                this.connetSockt();
+                this._socket = newSocket;
+            }
+            this._socket.timeout = 30000;
+            this._socket.endian = this.ENDIAN;
+            this._socket.addEventListener(Event.CLOSE, this.onEventCloseHandler, this);
+            this._socket.addEventListener(Event.CONNECT, this.onEventConnectHandler, this);
+            this._socket.addEventListener(IOErrorEvent.IO_ERROR, this.onEventIoErrorHandler, this);
+            this._socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, this.onEventSecurityErrorHandler, this);
+            this._socket.addEventListener(ProgressEvent.SOCKET_DATA, this.onEventProgressSocketDataHandler, this);
+            SystemHeartBeat.addEventListener(this.checkPacketByteArray, 10,this);
+            this._initListener = true;
+        }
+        private removeListener():void {
+            if (this._socket) {
+                this._socket.removeEventListener(Event.CONNECT, this.onEventConnectHandler, this);
+                this._socket.removeEventListener(IOErrorEvent.IO_ERROR, this.onEventIoErrorHandler, this);
+                this._socket.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, this.onEventSecurityErrorHandler, this);
+                this._socket.removeEventListener(ProgressEvent.SOCKET_DATA, this.onEventProgressSocketDataHandler, this);
             }
         }
-
-        /**
-         * 初始化websocket
-         */
-        private connetWebSockt():void {
-            this.closeWebSocketListener();
-            this._webSocket = new egret.WebSocket();
-            this._webSocket.type = egret.WebSocket.TYPE_BINARY;
-            this._webSocket.addEventListener(egret.ProgressEvent.SOCKET_DATA, this.onEventWebSocketProgressSocketDataHandler, this );
-            this._webSocket.addEventListener(egret.Event.CONNECT, this.onEventWebSocketConnectHandler, this );
-            this._webSocket.connect(this.host, this.port);
-        }
-
-        /**
-         * 关闭websocket
-         */
-        private closeWebSocketListener():void {
-            if (this._webSocket){
-                this._webSocket.removeEventListener(egret.ProgressEvent.SOCKET_DATA, this.onEventWebSocketProgressSocketDataHandler, this );
-                this._webSocket.removeEventListener(egret.Event.CONNECT, this.onEventWebSocketConnectHandler, this );
-                this._webSocket.close();
-                this._webSocket = null;
+        public connect(host:string, port:number = 0):void {
+            Debug.log = "@连接　host＝" + host + ", port=" + port;
+            if (this._socket == null){
+                this._initListener = false;
             }
+            this.initListener();
+            this.currentIp = host;
+            this.currentPort = port;
+            this._socket.connect(host, port);
         }
-        /**
-         * 初始化socket
-         */
-        private connetSockt():void {
-
-        }
-        /**
-         * 连接成功
-         * @param event
-         */
-        private onEventWebSocketConnectHandler(event:Event) :void {
-            Debug.log = "@@Socket连接完成!";
-            var myevent:MyEvent = MyEvent.getEvent(EventType.SOCKET_CONNECT);
-            myevent.addItem("host", this.host);
-            myevent.addItem("port", this.port);
-            myevent.send();
-        }
-        private  onEventWebSocketProgressSocketDataHandler(event:ProgressEvent) :void {
-            Debug.log = "@@--" + egret.getTimer() + "@@接收---ProgressSocketData";
-            this._byteRawBuffer = ObjectPool.getByClass(egret.ByteArray);
-            this._byteRawBuffer.clear();
-            this._byteRawBuffer.endian = MySocket.ENDIAN;
-            this._webSocket.readBytes(this._byteRawBuffer);
-            this.rawByteArrayCache.push(this._byteRawBuffer);
-        }
-
-        /**
-         * 查询是否连接
-         * @returns {boolean}
-         */
         public  isConnected():boolean {
-            //if (this._socket) return this._socket.connected;
-            if (this._webSocket) return this._webSocket.connected;
+            if (this._socket) return this._socket.connected;
             return false;
         }
-
-        /**
-         * 关闭连接
-         */
-        public  close():void {
-            if (this._isWebSocket) {
-                if (this._webSocket && this._webSocket.connected){
-                    this.closeWebSocketListener();
+        public  disConnect():void {
+            if (this._socket != null && this._socket.connected) {
+                Debug.log = "@主动断开 socket";
+                this.removeListener();
+                this._socket.close();
+            }
+            this.authorize_remain_length = this.AUTHORIZED_LENGTH;
+            this.isAuthorized = false;
+            this._socket = null;
+            this._initListener = false;
+            //            EventManager.dispatch(EventType.SOCKET_DISCONNECT);
+        }
+        public  send(packet:Packet):void {
+            if (this.currentPort > 0 && !this.isConnected() && this.loginPkt != null) {
+                this.connect(this.currentIp, this.currentPort);
+                if (this.loginPkt != null) {
+                    //自动发送登录包
+                    var encoder:DefaultEncoder = ObjectPool.getObjectClass(this.encodeClass);
+                    var outBytes:ByteArray = encoder.encoder(this.loginPkt);
+                    ObjectPool.releaseClass(encoder);
+                    this._socket.writeBytes(outBytes, 0, outBytes.length);
+                    this._socket.flush();
+                    Debug.log = HexUtil.dump(outBytes);
+                    outBytes.clear();
+                    ObjectPool.releaseClass(outBytes);
+                    //设置发送延迟
+                    this.pktDuration = 4*30;
                 }
             }
+            this.packcetSendCache.push(packet);
         }
-
-        private  _byteRawBuffer:egret.ByteArray = null;//缓冲的bytebuffer
-        private  _byteWaitBuffer:egret.ByteArray = null;//缓冲等待的bytebuffer
+        private  onEventCloseHandler(event:Event) :void {
+            Debug.log = "@@Socket连接CloseHandler";
+            this.removeListener();
+            this._socket = null;
+            var myevent:MyEvent = MyEvent.getEvent(EventType.SOCKET_DISCONNECT);
+            myevent.addItem("host", this.currentIp);
+            myevent.addItem("port", this.currentPort);
+            myevent.send();
+        }
+        private  onEventConnectHandler(event:Event) :void {
+            Debug.log = "@@Socket连接完成!";
+            var myevent:MyEvent = MyEvent.getEvent(EventType.SOCKET_CONNECT);
+            myevent.addItem("host", this.currentIp);
+            myevent.addItem("port", this.currentPort);
+            myevent.send();
+        }
+        private  onEventIoErrorHandler(event:IOErrorEvent) :void {
+            Debug.log = "@@Socket连接IoErrorHandler";
+            this.removeListener();
+            this.packcetSendCache.length = 0;
+            Debug.log = event.text;
+            var myevent:MyEvent = MyEvent.getEvent(EventType.SOCKET_DISCONNECT_ERROR);
+            myevent.addItem("host", this.currentIp);
+            myevent.addItem("port", this.currentPort);
+            myevent.send();
+        }
+        private onEventSecurityErrorHandler(event:SecurityErrorEvent) :void {
+            Debug.log = "@@Socket连接SecurityErrorHandler";
+            this.removeListener();
+            this.packcetSendCache.length = 0;
+            Debug.log = event.text;
+            var myevent:MyEvent = MyEvent.getEvent(EventType.SOCKET_DISCONNECT_ERROR);
+            myevent.addItem("host", this.currentIp);
+            myevent.addItem("port", this.currentPort);
+            myevent.send();
+        }
+        private  _byteRawBuffer:ByteArray = null;//缓冲的bytebuffer
+        private  onEventProgressSocketDataHandler(event:ProgressEvent) :void {
+            Debug.log = "@@--" + getTimer() + "@@接收---bytesAvailable=" + this._socket.bytesAvailable;
+            this._byteRawBuffer = ObjectPool.getObjectClass(ByteArray);
+            this._byteRawBuffer.clear();
+            this._byteRawBuffer.endian = this.ENDIAN;
+            this._byteRawBuffer.length = this._socket.bytesAvailable;
+            this._socket.readBytes(this._byteRawBuffer);
+            this.rawByteArrayCache.push(this._byteRawBuffer);
+            //Debug.log = "--@@---socket data=" +_byteRawBuffer.length;
+            //Debug.log = HexUtil.dump(_byteRawBuffer);
+        }
+        private  checkAuthorizedXml(byteDatas:ByteArray):boolean {
+            var length:number = this.authorXmlHeaderBytes.length > byteDatas.length?byteDatas.length:this.authorXmlHeaderBytes.length;
+            for (var i:number = 0; i < this.authorXmlHeaderBytes.length; i++)  {
+                if (this.authorXmlHeaderBytes[i] != byteDatas[i]) {
+                    return false;
+                }
+            }
+            return true
+        }
+        private  _byteWaitBuffer:ByteArray = null;//缓冲等待的bytebuffer
         private  _byteWaitReadLength:boolean = false;
         private  splitRawByte():void {
             var i:number = 0;
             var lengthCache:number = this.rawByteArrayCache.length;
-            var waiteToSplit:egret.ByteArray = null;
+            var waiteToSplit:ByteArray = null;
             for (i = 0; i < lengthCache; i++)  {
                 waiteToSplit = this.rawByteArrayCache.shift();
                 while(waiteToSplit.bytesAvailable > 0) {
                     if(this._byteWaitBuffer == null || !this._byteWaitReadLength) {//读取新的数据
                         if (this._byteWaitBuffer == null){
-                            this._byteWaitBuffer = ObjectPool.getByClass(egret.ByteArray);
+                            this._byteWaitBuffer = ObjectPool.getObjectClass(ByteArray);
                             this._byteWaitBuffer.clear();
-                            this._byteWaitBuffer.endian = MySocket.ENDIAN;
+                            this._byteWaitBuffer.endian = this.ENDIAN;
                             if (waiteToSplit.bytesAvailable >= 2) {
                                 //读取长度
                                 waiteToSplit.readBytes(this._byteWaitBuffer, 0 , 2);
@@ -208,56 +229,47 @@ module easy {
                         if (this._byteWaitBuffer.bytesAvailable == 0) {
                             this._byteWaitBuffer.position = 2;
                             Debug.log = "--@@---收到数据包---长度=" +this._byteWaitBuffer.length;
-                            //Debug.log = HexUtil.dump(this._byteWaitBuffer);
+                            Debug.log = HexUtil.dump(this._byteWaitBuffer);
                             this.packcetByteArrayCache.push(this._byteWaitBuffer);
                             this._byteWaitBuffer = null;
                             this._byteWaitReadLength = false;
                         }
                     }
                 }
-                //清除数据
                 waiteToSplit.clear();
-                ObjectPool.recycleClass(waiteToSplit);
+                ObjectPool.releaseClass(waiteToSplit);
             }
             
         }
         
-        private  checkPacketByteArray():void {
-            if (this.autoConnectDuration > 0) {
-                this.autoConnectDuration--;
-            }
-            if (this.isConnected() && this.autoConnectDuration == 0) {//编码发送缓冲区的数据
-                while(this.packcetSendCache.length > 0){
+        private  checkPacketByteArray(endCall:boolean):void {
+            if (this._socket && this._socket.connected) {
+                if (this.pktDuration > 0)this.pktDuration --;
+                while(this.packcetSendCache.length > 0 && this.pktDuration == 0){
                     var packetSend:Packet = this.packcetSendCache.shift();
-                    var encoder:DefaultEncoder = ObjectPool.getByClass(this.encodeClass);
-                    var outBytes:egret.ByteArray = encoder.encoder(packetSend);
-                    ObjectPool.recycleClass(encoder);
-                    if (this._isWebSocket){
-                        this._webSocket.readBytes(outBytes, 0, outBytes.length)
-                        this._webSocket.flush();
-                    }
-                    Debug.log = "@@--" + egret.getTimer() + "--@@-发送数据 msgid=" + packetSend.header.messageId + ",长度=" +outBytes.length + "," +egret.getQualifiedClassName(packetSend);
-                    //Debug.log = HexUtil.dump(outBytes);
+                    var encoder:DefaultEncoder = ObjectPool.getObjectClass(this.encodeClass);
+                    var outBytes:ByteArray = encoder.encoder(packetSend);
+                    ObjectPool.releaseClass(encoder);
+                    this._socket.writeBytes(outBytes, 0, outBytes.length);
+                    this._socket.flush();
+                    Debug.log = "@@--" + getTimer() + "--@@-发送数据 msgid=" + packetSend.header.messageId + ",长度=" +outBytes.length + "," +getQualifiedClassName(packetSend);
+                    Debug.log = HexUtil.dump(outBytes);
                     outBytes.clear();
-                    ObjectPool.recycleClass(outBytes);
+                    ObjectPool.releaseClass(outBytes);
                     EventManager.releasePacket(packetSend);
                 }
             }
             this.splitRawByte();//切割数据包
-            //解析缓存的数据并路由
             while (this.packcetByteArrayCache.length > 0) {
-                var byteData:egret.ByteArray = this.packcetByteArrayCache.shift();
-                var deccoder:DefaultDecoder = ObjectPool.getByClass(this.decodeClass);
+                var byteData:ByteArray = this.packcetByteArrayCache.shift();
+                var deccoder:DefaultDecoder = ObjectPool.getObjectClass(this.decodeClass);
                 var packet:Packet = deccoder.decode(byteData);
                 byteData.clear();
-                ObjectPool.recycleClass(byteData);
-                ObjectPool.recycleClass(deccoder);
-                EventManager.dispactchPacket(packet);
-            }
-
-            if (this._packetSendCache.length == 0 && this.packcetSendCache.length == 0) {
-                easy.HeartBeat.removeListener(this, this.checkPacketByteArray)
+                ObjectPool.releaseClass(byteData);
+                ObjectPool.releaseClass(deccoder);
+                EventManager.dispactchPacketToService(packet);
             }
         }
+        */
     }
 }

@@ -82,10 +82,10 @@ module easy{
          * @param type MyEvent事件的类型
          * @param func  对应的call back function,不包含onEvent前缀
          */
-        public addHandleEvent(type:string, funcName:string):void {
+        public addHandleEvent(eventType:string, funcName:string):void {
             //console.log("ReceiveGroup this=" + egret.getQualifiedClassName(this) + ", addHandleEvent=" + type + ", funcName=" + funcName);
-            easy.MessageControler.addEvent(type)
-            this.METHOD_DEF[type] = funcName;
+            easy.MessageControler.addEvent(eventType)
+            this.METHOD_DEF[eventType] = funcName;
         }
 
         /**
@@ -102,7 +102,15 @@ module easy{
          * @param packet
          */
         public receivePacket(packet:Packet):void {
-            if (this.METHOD_DEF["" + packet.header.messageId] && this["onPacket" + this.METHOD_DEF[packet.header.messageId]])this["onPacket" + this.METHOD_DEF[packet.header.messageId]].call(this, packet);
+            if (this._ui){
+                //检测模板的receivePacket
+                for (var prop in this._ui){
+                    if (this._ui[prop] instanceof Template && this._ui[prop] != this){
+                        this._ui[prop].receivePacket(packet);
+                    }
+                }
+            }
+            if (this.METHOD_DEF["" + packet.header.messageId] && this[this.METHOD_DEF[packet.header.messageId]])this[this.METHOD_DEF["" + packet.header.messageId]].call(this, packet);
         }
 
         /**
@@ -111,7 +119,15 @@ module easy{
          */
         public receiveEvent(event:MyEvent):void {
             //console.log("ReceiveGroup this=" + egret.getQualifiedClassName(this) + ", receiveEvent=" + event.type + ", isHas=" + this.METHOD_DEF[event.type]);
-            if (this.METHOD_DEF[event.type] && this["onEvent" + this.METHOD_DEF[event.type]]) this["onEvent" + this.METHOD_DEF[event.type]].call(this, event);
+            if (this._ui){
+                //检测模板的receiveEvent
+                for (var prop in this._ui){
+                    if (this._ui[prop] instanceof Template && this._ui[prop] != this){
+                        this._ui[prop].receiveEvent(event);
+                    }
+                }
+            }
+            if (this.METHOD_DEF[event.type] && this[this.METHOD_DEF[event.type]]) this[this.METHOD_DEF[event.type]].call(this, event);
         }
         /**
          * 初始化主场景的组件
@@ -122,6 +138,7 @@ module easy{
             super.createChildren();
             this.touchEnabled = true;//默认不接受事件
             this.showBg = false;
+            this.addHandleEvent(EventType.RESOURCE_DOWNLOADED, "onMyEventResDownloaded");
         }
         /**
          * 进入的逻辑
@@ -181,6 +198,7 @@ module easy{
          */
         public outerTransition():void {
             //console.log("@@outerTransition=" + egret.getQualifiedClassName(this))
+            this.outerTransitionComplete();
         }
         /**
          * outer的过渡效果结束

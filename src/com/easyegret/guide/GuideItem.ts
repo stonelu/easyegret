@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright (c) 2014,Egret-Labs.org
+ * Copyright (c) 2014,www.easyegret.com
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:

@@ -80,7 +80,7 @@ module easy {
                 label.bold = true;
                 label.stroke = 1;
                 label.strokeColor = 0x000000;
-                label._alpha = 0;
+                label.alpha = 0;
                 label.fontSize = 40;
                 label.showBg = false;
                 label.stroke = 1;
@@ -94,14 +94,14 @@ module easy {
                 label.getTextField()._setTextDirty();
                 label.draw();
                 if (item["x"] == 65535){
-                    label._x = GlobalSetting.STAGE_WIDTH/2 - label.cx;
+                    label.x = GlobalSetting.STAGE_WIDTH/2 - label.cx;
                 } else {
-                    label._x = item["x"];
+                    label.x = item["x"];
                 }
                 if (item["y"] == 65535){
-                    label._y = GlobalSetting.STAGE_HEIGHT/2;
+                    label.y = GlobalSetting.STAGE_HEIGHT/2;
                 } else {
-                    label._y = item["y"];
+                    label.y = item["y"];
                 }
                 this._labelArr.push(label);
                 //console.log("x=" + label._x + ", y=" + label._y + ", ix=" + item["x"] + ",iy=" + item["y"])
@@ -116,19 +116,19 @@ module easy {
                 //    label.setData(label.getData() + 1);
                 //} else {
                     if (label.getData() < this._dulation) {
-                        label._y -= 5;
-                        label._alpha += 0.1;
+                        label.y -= 5;
+                        label.alpha += 0.1;
                     } else {
-                        label._y -= 8;
-                        label._alpha -= 0.1;
+                        label.y -= 8;
+                        label.alpha -= 0.1;
                     }
                 //}
-                if (label._y < 0){//回收
+                if (label.y < 0){//回收
                     this._labelArr.splice(i,1);
                     label.removeFromParent();
                     ObjectPool.recycleClass(label);
                 }
-                if (i == (this._labelArr.length - 1) && (ViewManager.currentView.cy - this._labelArr[i]._y) > 5){
+                if (i == (this._labelArr.length - 1) && (ViewManager.currentView.cy - this._labelArr[i].y) > 5){
                     this._showNext = true;
                 }
             }

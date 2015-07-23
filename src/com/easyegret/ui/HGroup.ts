@@ -99,8 +99,8 @@ module easy {
 			}
 		}
 		public get width():number {
-			if (this._explicitWidth == NaN || this._explicitWidth == undefined) return 0;
-			return this._explicitWidth;
+			if (this.explicitWidth == NaN || this.explicitWidth == undefined) return 0;
+			return this.explicitWidth;
 		}
 		/**
 		 * 设置高
@@ -114,8 +114,8 @@ module easy {
 			}
 		}
 		public get height():number {
-			if (this._explicitHeight == NaN || this._explicitHeight == undefined) return 0;
-			return this._explicitHeight;
+			if (this.explicitHeight == NaN || this.explicitHeight == undefined) return 0;
+			return this.explicitHeight;
 		}
 
 		/**
@@ -141,7 +141,7 @@ module easy {
 			var wElements:number = 0;
 			//console.log("@@@@@HGroup numChildren=" + this.numChildren);
 			for(i = 0; i < this.numChildren; i++){
-				wElements += this.getChildAt(i)._explicitWidth;
+				wElements += this.getChildAt(i).explicitWidth;
 			}
 			//console.log("@@@@@HGroup 000 wElements=" + wElements + ", gap=" + this._gap);
 			wElements += (this.numChildren - 1) * this._gap;
@@ -163,9 +163,9 @@ module easy {
 				if(this._vAlign == egret.VerticalAlign.TOP){
 					child.y = 0;
 				}else if(this._vAlign == egret.VerticalAlign.MIDDLE){
-					child.y = (this._explicitHeight - child.height)/2;
+					child.y = (this.explicitHeight - child.height)/2;
 				}else if(this._vAlign == egret.VerticalAlign.BOTTOM){
-					child.y = this._explicitHeight - child.height;
+					child.y = this.explicitHeight - child.height;
 				}
 				//console.log("@@@@@HGroup x=" + child.x + ", y=" + child.y);
 			}

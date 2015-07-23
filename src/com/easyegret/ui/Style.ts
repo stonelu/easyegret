@@ -46,7 +46,7 @@ module easy {
 
 		
 		public static embedFonts:boolean = false;
-		public static fontName:string = "宋体";
+		public static fontName:string = null;
 		public static fontSize:number = 16;
 		/**
 		 * 是否允许文本加载默认滤镜. 

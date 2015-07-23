@@ -6,21 +6,21 @@ module easy {
 	export class DefaultDecoder implements IDecoder{
 		public static MATH_POW_2_32:number = 4294967296;// 2^32.
 //        public static const headersCache:Array = [];//packet header缓冲包
-        public decode(bytePacket:egret.ByteArray):Packet{
+        public decode(bytePacket:ByteArray):Packet{
             var header:IHeader = this.decodeHeader(bytePacket);
-            var packet:Packet = PacketFactory.createPacket(header.messageId, false);
+            var packet:Packet = PacketFactory.createPacket(header, false);
             if (packet && bytePacket.bytesAvailable > 0)this.decodeBody(bytePacket, packet);
             return packet;
         }
         //不包含长度,长度已经在接受数据的时候,进行分包解析掉了
-        public decodeHeader(bytePacket:egret.ByteArray):IHeader {
+        public decodeHeader(bytePacket:ByteArray):IHeader {
             var header:IHeader = PacketFactory.getHeader();
             header.messageId = bytePacket.readUnsignedShort();//WORD  cmd_index;//命令
             header.code = bytePacket.readUnsignedShort();//WORD   check_code;//校验位
             return header;
         }
         private defIndex:number = 0;
-        public decodeBody(bytePacket:egret.ByteArray, packet:Packet):void {
+        public decodeBody(bytePacket:ByteArray, packet:Packet):void {
             try{
                 var i:number = 0;
                 var count:number = packet.define.length;
@@ -28,41 +28,42 @@ module easy {
                     this.decodeItem(packet.define[i], bytePacket, packet);
                 }
             }catch(e){
-                Debug.log = "@--decodeError" + e.message;
+                Debug.error = "@--decodeError" + this.e.message;
+                this.console.log("[io error]:" + this.e.message);
             }
         }
         //CHAR	1	单字节字符
-        public readByte(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readByte(defItem:any, bytePacket:ByteArray, target:any):void {
             target[defItem.id] = bytePacket.readByte();
         }
         ////UBYTE	1	1个字节无符合整型
-        public readUByte(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readUByte(defItem:any, bytePacket:ByteArray, target:any):void {
             target[defItem.id] = bytePacket.readUnsignedByte();
         }
         ////UBYTE	1	1个字节无符合整型
-        public readBoolean(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readBoolean(defItem:any, bytePacket:ByteArray, target:any):void {
             var value:number = bytePacket.readUnsignedByte();
             target[defItem.id] = false;
             if (value == 1)target[defItem.id] = true;
         }
         //WORD	2	2个字节无符合整型
-        public readUShort(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readUShort(defItem:any, bytePacket:ByteArray, target:any):void {
             target[defItem.id] = bytePacket.readUnsignedShort();
         }
         //2字节有符号整数
-        public readShort(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readShort(defItem:any, bytePacket:ByteArray, target:any):void {
             target[defItem.id] = bytePacket.readShort();
         }
         //DWORD	4	4个字节无符合整型
-        public readUInt(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readUInt(defItem:any, bytePacket:ByteArray, target:any):void {
             target[defItem.id] = bytePacket.readUnsignedInt();
         }
         //DWORD	4	4个字节有符合整型
-        public readInt(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readInt(defItem:any, bytePacket:ByteArray, target:any):void {
             target[defItem.id] = bytePacket.readInt();
         }
         //long	8	64位无符号双精度
-        public readUInt64(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readUInt64(defItem:any, bytePacket:ByteArray, target:any):void {
             var long_l:number = 0;
             var long_h:number = 0;
             long_h  = bytePacket.readUnsignedInt();
@@ -70,7 +71,7 @@ module easy {
             target[defItem.id] =  (<number><any> long_h * DefaultDecoder.MATH_POW_2_32) + long_l;
         }
         //8字节
-        public readInt64(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readInt64(defItem:any, bytePacket:ByteArray, target:any):void {
             var long_l:number = 0;
             var long_h:number = 0;
             long_h  = bytePacket.readInt();
@@ -78,15 +79,15 @@ module easy {
             target[defItem.id] =  (<number><any> long_h * DefaultDecoder.MATH_POW_2_32) + long_l;
         }
         //long	4	32位双精度
-        public readFloat(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readFloat(defItem:any, bytePacket:ByteArray, target:any):void {
             target[defItem.id] = bytePacket.readFloat();
         }
         //long	4	32位无符号双精度
-        public readUFloat(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readUFloat(defItem:any, bytePacket:ByteArray, target:any):void {
             target[defItem.id] = bytePacket.readFloat();
         }
         //long	8	64位无符号双精度
-        public readUDouble(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readUDouble(defItem:any, bytePacket:ByteArray, target:any):void {
             var long_l:number = 0;
             var long_h:number = 0;
             long_l = bytePacket.readUnsignedInt();
@@ -94,7 +95,7 @@ module easy {
             target[defItem.id] =  (<number><any> long_h * DefaultDecoder.MATH_POW_2_32) + long_l;
         }
         //8字节
-        public readDouble(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readDouble(defItem:any, bytePacket:ByteArray, target:any):void {
             var long_l:number = 0;
             var long_h:number = 0;
             long_l = bytePacket.readUnsignedInt();
@@ -102,20 +103,20 @@ module easy {
             target[defItem.id] =  (<number><any> long_h * DefaultDecoder.MATH_POW_2_32) + long_l;
         }
         //数据流
-        public readByteArray(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readByteArray(defItem:any, bytePacket:ByteArray, target:any):void {
             var length:number = bytePacket.readUnsignedShort();//数据流长度
-            var ba:egret.ByteArray = ObjectPool.getByClass(egret.ByteArray);
+            var ba:ByteArray = ObjectPool.getObjectClass(ByteArray);
             if (length > 0) {
                 bytePacket.readBytes(ba, 0, length);
             }
             target[defItem.id] = ba;
         }
         //字符串读取
-        public readString(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public readString(defItem:any, bytePacket:ByteArray, target:any):void {
             target[defItem.id] = bytePacket.readUTF();
         }
         //数组读取
-        public readArray(defItem:any, bytePacket:egret.ByteArray, target:any):void{
+        public readArray(defItem:any, bytePacket:ByteArray, target:any):void{
             var count:number = 0;
             if (Packet.TYPE_ARRAY_CONST == defItem.type) {
                 count = defItem["length"];
@@ -144,8 +145,8 @@ module easy {
             }
         }
         //实体读取
-        public readEntity(defItem:any, bytePacket:egret.ByteArray, target:any):void {
-            var entity:any = ObjectPool.getByClass(defItem.entity);
+        public readEntity(defItem:any, bytePacket:ByteArray, target:any):void {
+            var entity:any = ObjectPool.getObjectClass(defItem.entity);
             var define:Array<any> = entity.define;
             var i:number = 0;
             for (i = 0; i < define.length; i++)  {
@@ -154,8 +155,8 @@ module easy {
             target[defItem.id] = entity;
         }
         //往数组实体读取
-        public readEntityToArray(defItem:any, bytePacket:egret.ByteArray, target:any):void {
-            var entity:any = ObjectPool.getByClass(defItem.entity);
+        public readEntityToArray(defItem:any, bytePacket:ByteArray, target:any):void {
+            var entity:any = ObjectPool.getObjectClass(defItem.entity);
             var define:Array<any> = entity.define;
             var i:number = 0;
             for (i = 0; i < define.length; i++)  {
@@ -163,7 +164,7 @@ module easy {
             }
             target.push(entity);
         }
-        public decodeItem(defItem:any, bytePacket:egret.ByteArray, target:any):void {
+        public decodeItem(defItem:any, bytePacket:ByteArray, target:any):void {
             switch(defItem.type) {
                 case Packet.TYPE_BYTE://CHAR	1	单字节字符
                     this.readByte(defItem, bytePacket, target);

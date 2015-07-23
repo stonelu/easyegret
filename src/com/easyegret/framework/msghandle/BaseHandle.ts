@@ -81,7 +81,9 @@ module easy {
          * @param event
          */
         public receiveEvent(event:MyEvent):void {
-            if (this.EVENT_DEF.indexOf(event.type) >= 0 && this.METHOD_DEF.hasOwnProperty(event.type)) this["onEvent" + this.METHOD_DEF[event.type]].call(this, event);
+            if (this.EVENT_DEF.indexOf(event.type) >= 0) {
+                if (this.METHOD_DEF.hasOwnProperty(event.type)) this["onEvent" + this.METHOD_DEF[event.type]].call(this, event);
+            }
         }
     }
 }

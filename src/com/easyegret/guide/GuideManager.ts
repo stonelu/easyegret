@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright (c) 2014,Egret-Labs.org
+ * Copyright (c) 2014,www.easyegret.com
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -44,6 +44,10 @@ module easy {
         //遮幅对象是否已初始化
         private static _initCropping:boolean = false;
 
+        //剧情结束的时候,需要回调的无参数function
+        private static _completeCallFunc:Function = null;//
+        private static _completeCallFuncThis:any = null;//
+
         public constructor(){
         }
 
@@ -52,9 +56,9 @@ module easy {
          * @param id 节点id
          * @param clz 所使用的窗口类对象
          */
-        public static play(id:string, clz:any = null):void {
+        public static play(id:string, clz:any = null, completeCallFunc:Function = null, thisFunc:any = null):void {
             if (GuideManager.guide_item_dict[id]) {
-                GuideManager.playItem(GuideManager.guide_item_dict[id], clz);
+                GuideManager.playItem(GuideManager.guide_item_dict[id], clz, completeCallFunc, thisFunc);
             }
         }
         /**
@@ -62,13 +66,16 @@ module easy {
          * @param item 节点对象
          * @param clz 所使用的窗口类对象
          */
-        public static playItem(item:GuideItem, clz:any = null):void {
+        public static playItem(item:GuideItem, clz:any = null, completeCallFunc:Function = null, thisFunc:any = null):void {
             if (!item) return;
+            GuideManager._completeCallFunc = completeCallFunc;
+            GuideManager._completeCallFuncThis = thisFunc;
+
             var guideView:any = DefaultGuideWin;
             if (GuideManager.currentClz) guideView = GuideManager.currentClz;
             if (clz)guideView = clz;
 
-            var instView:DefaultGuideWin = PopupManager.show(guideView, item);
+            var instView:DefaultGuideWin = PopupManager.show(guideView, item, false);
             if (instView && GuideManager.currentItem) {
                 instView.data = item;
                 instView.enter();
@@ -78,6 +85,32 @@ module easy {
             //保存数据
             GuideManager.currentItem = item;
             GuideManager.currentClz = guideView;
+        }
+
+        /**
+         * 根据当前节点,继续播放下一节点
+         */
+        public static playNextItem():boolean {
+            if (GuideManager.currentItem && easy.StringUtil.isUsage(GuideManager.currentItem.next_frame)) {
+                var nextItem:GuideItem = GuideManager.guide_item_dict[GuideManager.currentItem.next_frame];
+                if (nextItem) {
+                    GuideManager.playItem(nextItem, GuideManager.currentClz, GuideManager._completeCallFunc, GuideManager._completeCallFuncThis);
+                    return true;
+                }
+            }
+            GuideManager.stop();
+            return false;
+        }
+
+        /**
+         * 停止播放剧情
+         */
+        public static stop():void {
+            if (GuideManager._completeCallFunc) GuideManager._completeCallFunc.call(GuideManager._completeCallFuncThis);
+            GuideManager.currentItem = null;
+            GuideManager.hiddenCropping();
+            GuideManager._completeCallFunc = null;
+            GuideManager._completeCallFuncThis = null;
         }
 
 
@@ -156,6 +189,18 @@ module easy {
                     GuideManager.croppingBottom.height = GuideManager.croppingBottom.bgTexture.textureHeight;
                 }
             }
+        }
+
+        /**
+         * 根据id获取GuideItem
+         * @param id
+         * @returns {any}
+         */
+        public static getGuideItem(id:string):GuideItem {
+            if (StringUtil.isUsage(id) && GuideManager.guide_item_dict[id]){
+                return GuideManager.guide_item_dict[id];
+            }
+            return null;
         }
     }
 }

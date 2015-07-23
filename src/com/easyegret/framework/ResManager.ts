@@ -26,25 +26,67 @@
  */
 module easy {
     export class ResManager {
+        //---- for project texture manager---
         private static _isInit:boolean = false;//是否已初始化
         private static _canSplite:boolean = false;//是否可以切割
-
         private static _projectGroup:string = "";
         private static _projectName:string = "";
-
+        private static _projectNameSprite:Array<string> = [];
         private static _spriteSheet:egret.SpriteSheet = null;
 
+        //--- for Dynamic loaded texture manager ----
+        private static _urlDataDict:Object = {};
+        private static _urlDownloading:Array<string> = [];//已进入下载的url
+
         /**
-         * 通用统计信息
+         * 获取Texture材质
          */
         public static getTexture(name:string):egret.Texture {
+            //判断是项目公用素材,还是独立下载资源
             if (!this._isInit && ResManager._canSplite){
                 ResManager.spliteSpriteSheet();
             }
-            if (!this._isInit){
-                return null;
+            if (ResManager._projectNameSprite.indexOf(name) >= 0){//项目公用的材质
+                if (!this._isInit){
+                    return null;
+                }
+                return ResManager._spriteSheet.getTexture(name);
+            } else {//动态下载的资源
+                return ResManager.getRes(name);
             }
-            return ResManager._spriteSheet.getTexture(name);
+            return null;
+        }
+
+        /**
+         * 非材质或者材质,请通过这个方法获取
+         * 内容请自行解析
+         */
+        public static getRes(name:string):any {
+            if (ResManager._urlDataDict[name]) {
+                return ResManager._urlDataDict[name];
+            } else if (ResManager._urlDownloading.indexOf(name) < 0){//启动下载
+                ResManager._urlDownloading.push(name);
+                RES.getResByUrl(name, ResManager.onloadedCompleteDynamicTexture, this);
+            }
+            return null;
+        }
+
+        /**
+         * 动态加载的数据完成
+         * @param data
+         * @param url
+         */
+        private static onloadedCompleteDynamicTexture(data, url){
+            //console.log("loaded.url=" + url);
+            //console.log("loaded.data=" + RES.getRes(url));
+            if (data){
+                if (ResManager._urlDownloading.indexOf(url) >= 0)ResManager._urlDownloading.splice(ResManager._urlDownloading.indexOf(url),1);
+                ResManager._urlDataDict[url] = data;
+                var myEvent:MyEvent = MyEvent.getEvent(EventType.RESOURCE_DOWNLOADED);
+                myEvent.addItem("url", url);
+                myEvent.addItem("data", data);
+                myEvent.send();
+            }
         }
 
         /**
@@ -100,6 +142,7 @@ module easy {
                 if (jsonData) {
                     ResManager._spriteSheet = new egret.SpriteSheet(RES.getRes(ResManager._projectGroup + "_img"));
                     for (var key in jsonData.texture) {
+                        ResManager._projectNameSprite.push(key);
                         ResManager._spriteSheet.createTexture(key, jsonData.texture[key].x, jsonData.texture[key].y, jsonData.texture[key].w, jsonData.texture[key].h);
                     }
                 }

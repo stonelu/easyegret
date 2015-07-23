@@ -185,26 +185,6 @@ module easy {
         public get smoothing():boolean{
             return this._smoothing;
         }
-        public set width(w:number){
-            if (this.width != w){
-                this._setWidth(w)
-                this.invalidate();
-            }
-        }
-        public get width():number {
-            if (this._explicitWidth == NaN) return 0;
-            return this._explicitWidth;
-        }
-        public set height(h:number){
-            if (this.height != h){
-                this._setHeight(h);
-                this.invalidate();
-            }
-        }
-        public get height():number {
-            if (this._explicitHeight == NaN) return 0;
-            return this._explicitHeight;
-        }
         public draw():void{
             if (this._texture == null && this._bitmap.texture == null) return;
             if (this._texture && this._bitmap.texture != this._texture){

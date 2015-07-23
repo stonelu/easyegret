@@ -44,7 +44,7 @@ module easy {
         }
         //是否有效
         public static isUsage(value:string):boolean {
-            if (value == undefined || value == null || StringUtil.trim(value) == "" ) {
+            if (value == undefined || value == null || StringUtil.trim(value) == "" || value == "undefined") {
                 return false;
             }
             return true;

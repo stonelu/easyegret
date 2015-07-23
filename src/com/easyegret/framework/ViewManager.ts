@@ -40,6 +40,7 @@ module easy{
          * @param clz
          */
         public static change(clz:any, data:any = null):void {
+            PopupManager.removeAll();
             if (ViewManager.mainContainer == null){
                 ViewManager.mainContainer = new egret.DisplayObjectContainer();
                 GlobalSetting.STAGE.addChild(ViewManager.mainContainer);
@@ -79,12 +80,11 @@ module easy{
          */
         public static waitViewDoEnter():void {
             //console.log("@@ViewManager waitViewDoEnter view=" + egret.getQualifiedClassName(ViewManager._waitChangeView));
-            //if (ViewManager.currentView){
-            //    //console.log("@@ViewManager 000 waitViewDoEnter")
-            //    ViewManager.currentView.outer();
-            //}
+            if (ViewManager.currentView && ViewManager._waitChangeView != ViewManager.currentView){
+                //console.log("@@ViewManager 000 waitViewDoEnter")
+                ViewManager.currentView.outer();
+            }
             if (ViewManager._waitChangeView) {
-                ViewManager._waitChangeView.removeFromParent();
                 //新的view
                 if (!ViewManager._waitChangeView._uiResReady) ViewManager._waitChangeView._uiResReady = true;//ui的res已经准备完成,下次不需要download了
                 ViewManager._waitChangeView.removeFromParent();
@@ -92,7 +92,9 @@ module easy{
                 ViewManager._waitChangeView.alpha = 1;
                 ViewManager._waitChangeView.anchorX = 0.5
                 ViewManager._waitChangeView.anchorY = 0.5
-                ViewManager._waitChangeView.enter();
+                ViewManager.currentView = ViewManager._waitChangeView;
+                ViewManager.currentView.enter();
+                ViewManager._waitChangeView = null;
                 //console.log("@@ViewManager 111 waitViewDoEnter")
             }
         }
@@ -103,11 +105,9 @@ module easy{
          */
         public static receivePacket(packet:Packet):void {
             //view层派发
-            ViewManager.currentView.receivePacket(packet);
+            if (ViewManager.currentView)ViewManager.currentView.receivePacket(packet);
             //弹出窗口派发
-            for (var i = 0; i < PopupManager.CURRENT_SHOW.length; i++){//win界面派发
-                PopupManager.CURRENT_SHOW[i].receivePacket(packet);
-            }
+            if (PopupManager.currentWin)PopupManager.currentWin.receivePacket(packet);//win界面派发
         }
 
         /**
@@ -116,11 +116,9 @@ module easy{
          */
         public static receiveEvent(event:MyEvent):void {
             //view层派发
-            ViewManager.currentView.receiveEvent(event);
+            if (ViewManager.currentView)ViewManager.currentView.receiveEvent(event);
             //弹出窗口派发
-            for (var i = 0; i < PopupManager.CURRENT_SHOW.length; i++){//win界面派发
-                PopupManager.CURRENT_SHOW[i].receiveEvent(event);
-            }
+            if (PopupManager.currentWin)PopupManager.currentWin.receiveEvent(event);//win界面派发
         }
     }
 }

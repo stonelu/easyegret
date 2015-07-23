@@ -56,6 +56,7 @@ module easy {
          * @param item 要返回池中的item对象
          */
         public static recycleClass(obj:any):void {
+            if (!obj) return;
             var key:string = egret.getQualifiedClassName(obj);
             ObjectPool.recycleObject(key, obj);
         }
@@ -106,6 +107,7 @@ module easy {
          * @param item
          */
         public static recycleObject(name:string, item:any):void {
+            if (!item) return;
             if (!ObjectPool._dataPool.hasOwnProperty(name)) {
                 ObjectPool._dataPool[name] = [];
             }

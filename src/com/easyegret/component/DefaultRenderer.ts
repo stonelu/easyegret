@@ -40,6 +40,12 @@ module easy {
 
 		private _selected:boolean;
 		private _labelField:string = null;
+		/**
+		 * item renderËùÔÚµÄlist
+		 * @type {null}
+		 */
+		public list:List = null;
+
 		public constructor(){
 			super();
 		}

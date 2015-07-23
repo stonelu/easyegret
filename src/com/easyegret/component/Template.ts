@@ -33,5 +33,12 @@ module easy{
         public constructor() {
             super();
         }
+        /**
+         * outer的过渡效果
+         */
+        public outerTransition():void {
+            //super.outerTransition();//调用父类的话,就会被移除
+            //TODO 可以覆盖这里,写自己想要的out效果
+        }
     }
 }

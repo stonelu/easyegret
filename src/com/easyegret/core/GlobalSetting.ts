@@ -103,18 +103,19 @@ module easy {
          * @type {null}
          */
         public static REPORT_UI:boolean = false;
-        /**
-         * 报表URL地址
-         */
+        //报表URL地址
         public static REPORT_URL:string = "";
-        /**
-         * 产品名
-         */
+        //产品名
         public static APP_NAME:string = "";
+        //产品id
+        public static APP_PRODUCT_ID:string = "";
         /**
          * 设备信息, 报表使用
          */
         public static APP_DEVICE:string = "";
+        public static APP_DataEyeId:string = "";
+        public static APP_Rate:number = 0;
+        public static APP_RateName:number = 0;
         /**
          * 渠道信息, 报表使用
          */

@@ -40,7 +40,7 @@ module easy {
         /**
          * 通用统计信息
          */
-        public static send(data:any, sufixUrl:string = "", token:number = 0):void {
+        public static send(data:any, sufixUrl:string = "", token:string = ""):void {
             if (!GlobalSetting.REPORT) {
                 return;
             }
@@ -57,7 +57,7 @@ module easy {
                 Report._loader = new egret.URLLoader();
                 Report._loader.dataFormat = egret.URLLoaderDataFormat.BINARY;
             }
-            if (token == 0){
+            if (token && token.length > 0){
                 Report._baseInfo["tk"] = Math.round(Math.random()*99999999);//随机token
             } else {
                 Report._baseInfo["tk"] = token;//随机token
@@ -107,8 +107,8 @@ module easy {
          * @param event
          */
         public static onLoadingGroupJosnFileError(event:RES.ResourceEvent):void {
-            RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE, Report.onLoadingGroupJosnFileComplete, Report);
-            RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, Report.onLoadingGroupJosnFileError, Report)
+            RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, Report.onLoadingGroupJosnFileComplete, Report);
+            RES.removeEventListener(RES.ResourceEvent.CONFIG_LOAD_ERROR, Report.onLoadingGroupJosnFileError, Report)
         }
         /**
          * loading配置文件的Group加载完成
@@ -116,18 +116,22 @@ module easy {
          */
         public static onLoadingGroupJosnFileComplete(event:RES.ResourceEvent):void{
             if(event.groupName=="group_easy_report_config"){
-                RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE,Report.onLoadingGroupJosnFileComplete, Report);
-                RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, Report.onLoadingGroupJosnFileError, Report)
+                RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE,Report.onLoadingGroupJosnFileComplete, Report);
+                RES.removeEventListener(RES.ResourceEvent.CONFIG_LOAD_ERROR, Report.onLoadingGroupJosnFileError, Report)
                 var jsonConfig:any = RES.getRes("easy_report_config");
                 if (jsonConfig) {
                     Report._isInit = true;
                     GlobalSetting.APP_VERSION = jsonConfig.version;
                     GlobalSetting.REPORT_URL = jsonConfig.url;
                     GlobalSetting.APP_NAME = jsonConfig.name;
+                    GlobalSetting.APP_PRODUCT_ID = jsonConfig.productId;
                     GlobalSetting.APP_PROVIDE = jsonConfig.provide;
                     for(var i = 0; i < jsonConfig.channel.length; i++) {
                         if (GlobalSetting.APP_PROVIDE == jsonConfig.channel[i].id) {
                             GlobalSetting.APP_CHANNEL = jsonConfig.channel[i].name;
+                            easy.GlobalSetting.APP_DataEyeId = jsonConfig.channel[i].dataEyeId;//Data eye 统计的id
+                            easy.GlobalSetting.APP_Rate = jsonConfig.channel[i].rate;//汇率
+                            easy.GlobalSetting.APP_RateName = jsonConfig.channel[i].des;//汇率的单位
                             GlobalSetting.REPORT_UI = jsonConfig.channel[i].report_ui;
                             GlobalSetting.REPORT = jsonConfig.channel[i].report;
                             GlobalSetting.APP_STORAGE =  jsonConfig.channel[i].storage;

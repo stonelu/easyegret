@@ -27,7 +27,7 @@
 module easy {
     export class ReportShop {
         public id:number = 0;//商店编号
-        public orderId:number = 0;//订单号,对账
+        public orderId:string = "";//订单号,对账
         public name:string = "";    //付费点
         public rmb:number = 0;     //费用
         public type:string = "";     //类型

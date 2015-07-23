@@ -61,7 +61,12 @@ module easy {
         private _soundName:string = null;
         private _sound:egret.Sound = null;
 
-        private _rollingEffect:EffectNumberRolling = null;
+        //roling滚动设置
+        private _rollingEnable:boolean = false;//滚动开关
+        private _rollingZoomEnable:boolean = false;//滚动放大开关
+        private _rollingZoomValue:number = 1.5;//放大倍数
+        private _rollingZoomAlign:string = egret.HorizontalAlign.CENTER;//放大对齐方式
+        private _rollingEffect:EffectNumberRolling = null;//滚动对象
 
         public constructor(drawDelay:boolean = false) {
             super(drawDelay);
@@ -84,12 +89,33 @@ module easy {
 
         public set text(value:string) {
             if(this._text != value){
-                this._text = value;
-                if(this._text == null) this._text = "";
-                this.invalidate();
-                this.onPlaySound();
+                if (this._rollingEnable){
+                    //滚动设置
+                    if (this._rollingEffect == null){
+                        this._rollingEffect = new EffectNumberRolling(this);
+                        this._rollingEffect.zoomEnable = this._rollingZoomEnable;
+                        this._rollingEffect.zoomValue = this._rollingZoomValue;
+                        this._rollingEffect.zoomAlign = this._rollingZoomAlign;
+                    }
+                    this._rollingEffect.setText(value);
+                } else {
+                    this.setText(value);
+                }
             }
         }
+
+        /**
+         * 自己设置显示字符
+         * @param str
+         */
+        public setText(str:string):void {
+            this._text = str;
+            if(this._text == null) this._text = "";
+            this.invalidate();
+            this.onPlaySound();
+        }
+
+
         public get texture():egret.Texture {
             return this._texture;
         }
@@ -253,230 +279,276 @@ module easy {
             return this._soundName;
         }
         /**
-         * 设置滚动文字
+         * 文字滚动设置
          * @param value
          */
-        public setTextRolling(str:any, zoom:boolean = false, scaleX:number = 1.5, scaleY:number = 1.5){
-            if (this._rollingEffect == null){
-                this._rollingEffect = new EffectNumberRolling(this);
-            }
-            this._rollingEffect.zoomEnable = zoom;
-            this._rollingEffect.zoomX = scaleX;
-            this._rollingEffect.zoomY = scaleY;
-            //console.log("setTextRolling=" + str)
-            this._rollingEffect.setText("" + str);
+        public set rollingEnable(value:boolean){
+            this._rollingEnable = value;
         }
-        public clearTextRolling():void {
-            this._rollingEffect = null;
-        }
-     }
-    export class EffectNumberRolling{
-        public zoomEnable:boolean = false;
-        public zoomX:number = 1;
-        public zoomY:number = 1;
-        private _isZoom:boolean = false;
-        private _zoomXOld:number = 1;
-        private _zoomYOld:number = 1;
-        private _xOld:number = 1;
-        private _yOld:number = 1;
-        private _labelImg:LabelImage = null;
-        private _rollingText:Array<string> = [];
-        //上一次分解好的字符串
-        private _isSplitInit:boolean = false;
-        private _splitStr:Array<any> = [];
-        private _typeStr:Array<boolean> = [];//记录每个位置的num=true
-        public constructor(lableImg:LabelImage) {
-            this._labelImg = lableImg;
-            this._xOld = this._labelImg.x;
-            this._yOld = this._labelImg.y;
-            //console.log("x=" + this._xOld + ", y=" + this._yOld)
-        }
-        public setText(str:string){
-            //console.log("目标str=" +str);
-            if (this._rollingText.length > 0){
-                this._labelImg.text = this._rollingText[this._rollingText.length -1];
-            }
-            this._rollingText.length = 0;
-            this._typeStr.length = 0;
-            var tempSpliteStr:Array<string> = [];
-            if (easy.StringUtil.isUsage(str)){
-                //分解成可翻滚的字符串
-                var isLastNum:boolean = false;
-                var temStr:string = "";
-                for(var i = 0; i < str.length; i++){
-                    //console.log("str.charCodeAt=" + str.charCodeAt(i))
-                    if (str.charCodeAt(i) >= 48 && str.charCodeAt(i) <= 57) {//数字
-                        //console.log("000=" + str.charCodeAt(i))
-                        if (isLastNum) {
-                            //console.log("000--00=" + str.charCodeAt(i))
-                            temStr += str.substring(i, i+1);
-                        } else {
-                            //console.log("000--11=" + str.charCodeAt(i))
-                            //console.log("000 temStr=" + temStr)
-                            if (easy.StringUtil.isUsage(temStr)) {
-                                tempSpliteStr.push(temStr);
-                                this._typeStr.push(isLastNum);
-                            }
-                            temStr = str.substring(i, i+1);
-                        }
-                        isLastNum = true;
-                    } else {//当前是字符
-                        if (isLastNum) {
-                            //console.log("111--00=" + str.charCodeAt(i))
-                            if (easy.StringUtil.isUsage(temStr)) {
-                                tempSpliteStr.push(temStr);
-                                this._typeStr.push(isLastNum);
-                                //console.log("111 temStr=" + temStr)
-                            }
-                            temStr = str.substring(i, i+1);
-                        } else {
-                            //console.log("111--11=" + str.charCodeAt(i))
-                            temStr += str.substring(i, i+1);
-                        }
-                        isLastNum = false;
-                    }
-                    //console.log("temStr=" + temStr);
-                }
-                tempSpliteStr.push(temStr);//最后一个str
-                this._typeStr.push(isLastNum);
-            } else {
-                //根据旧数据,构造一个字符串
-                for(var i = 0; i < this._typeStr.length; i++){
-                    if (this._splitStr[i]){
-                        tempSpliteStr.push("0");
-                    } else {
-                        tempSpliteStr.push(this._splitStr[i]);
-                    }
-                }
-            }
-            //console.log("分解的 tempSpliteStr=" +tempSpliteStr);
-            //把str的数值部分解析成num
-            var tempSpliteValue:Array<any> = [];
-            for(var i = 0; i < this._typeStr.length; i++){
-                if (this._typeStr[i]){
-                    tempSpliteValue.push(parseInt(tempSpliteStr[i]));
-                    if (!this._isSplitInit) this._splitStr.push(0);
-                } else {
-                    tempSpliteValue.push(tempSpliteStr[i]);
-                    if (!this._isSplitInit) this._splitStr.push(tempSpliteStr[i]);
-                }
-            }
-            //console.log("分解的 _typeStr=" + this._typeStr);
-            //console.log("分解的 tempSpliteValue=" +tempSpliteValue);
-            //开始生成序列数值
-            var tempLastValue:Array<any> = [].concat(this._splitStr);//
-            var stepValue:number = 0;
-            var stepStr:string = "";
-            while(this.isGen(tempSpliteValue, tempLastValue)) {
-                stepStr = "";
-                //单挑生成
-                for (var i = 0; i < this._typeStr.length; i++) {
-                    if (this._typeStr[i]) {
-                        stepValue = this.getStepValue(tempSpliteValue[i], this._splitStr[i]);
-                        if (stepValue > 0) {
-                            if (tempLastValue[i] + stepValue > tempSpliteValue[i]) {
-                                stepStr += tempSpliteValue[i];
-                                tempLastValue[i] = tempSpliteValue[i];
-                            } else {
-                                stepStr += tempLastValue[i] + stepValue;
-                                tempLastValue[i] = tempLastValue[i] + stepValue;
-                            }
-                        } else {
-                            if (tempLastValue[i] + stepValue < tempSpliteValue[i]) {
-                                stepStr += tempSpliteValue[i];
-                                tempLastValue[i] = tempSpliteValue[i];
-                            } else {
-                                stepStr += tempLastValue[i] + stepValue;
-                                tempLastValue[i] = tempLastValue[i] + stepValue;
-                            }
-                        }
-                    } else {
-                        stepStr += tempSpliteValue[i];
-                    }
-                }
-                //console.log("step.str=" + stepStr)
-                this._rollingText.push(stepStr);
-            }
-            //保存这次的值
-            this._splitStr = tempSpliteValue;
-            this._isSplitInit = true;
-
-            HeartBeat.addListener(this, this.onChangeText, 2);
-
-            if (this.zoomEnable && !this._isZoom && this.zoomX != this._labelImg.scaleX && this.zoomY != this._labelImg.scaleY){
-                this._isZoom = true;
-                this._zoomXOld = this._labelImg.scaleX;
-                this._zoomYOld = this._labelImg.scaleY;
-                var paramObj:Object = {scaleX:this.zoomX, scaleY:this.zoomY};
-                if (this._labelImg.anchorX == 0 && this._labelImg._anchorOffsetX == 0){
-                    paramObj["x"] = - Math.round(this._labelImg.cx);
-                }
-                if (this._labelImg.anchorY == 0 && this._labelImg._anchorOffsetY == 0){
-                    paramObj["y"] = - Math.round(this._labelImg.cy);
-                }
-                egret.Tween.get(this._labelImg).to(paramObj, 400, egret.Ease.bounceInOut);
-            }
-        }
-
-        private isGen(src:Array<any>, target:Array<any>):boolean {
-            //console.log("isGen src=" + src + ", target=" + target);
-            for(var i = 0; i < src.length; i++){
-                if (src[i] != target[i]) return true;
-            }
-            return false;
+        public get rollingEnable():boolean {
+            return this._rollingEnable;
         }
 
         /**
-         * 根据最大和最小值,计算出增量多少合适
-         * @param min
-         * @param max
+         * 文字滚动放大设置
+         * @param value
          */
-        private getStepValue(num1:number, num2:number):number {
-            var tempStep = Math.abs(num1 - num2);
-            var value:number = 1;
-            if (tempStep < 30){//30次
-                value = 1;
-            } else if (tempStep < 60) {//30次
-                value = 2;
-            } else if (tempStep < 100) {//30次
-                value = 3;
-            } else if (tempStep < 200) {//40次
-                value = 5;
-            } else if (tempStep < 400) {//40次
-                value = 10;
-            } else if (tempStep < 800) {//40次
-                value = 20;
-            } else if (tempStep < 1500) {//50次
-                value = 30;
-            } else if (tempStep < 2500) {//60次
-                value = 40;
-            } else if (tempStep < 3500) {//70次
-                value = 50;
-            } else {
-                value = Math.floor(tempStep/(Math.round(tempStep/1000)*10 + 90));
-            }
-            if (num1 < num2){
-                value = -value;
-            }
-            return value;
+        public set rollingZoomEnable(value:boolean){
+            this._rollingZoomEnable = value;
+            if (this._rollingEffect) this._rollingEffect.zoomEnable = value;
         }
-        private onChangeText():void {
-            if (this._rollingText.length > 0) {
-                this._labelImg.text = this._rollingText.shift();
-            } else {
-                HeartBeat.removeListener(this, this.onChangeText);
-                if (this._isZoom){
-                    var paramObj:Object = {scaleX:this._zoomXOld, scaleY:this._zoomYOld};
-                    if (this._labelImg.anchorX == 0 && this._labelImg._anchorOffsetX == 0){
-                        paramObj["x"] = -this._xOld;
-                    }
-                    if (this._labelImg.anchorY == 0 && this._labelImg._anchorOffsetY == 0){
-                        paramObj["y"] = -this._yOld;
-                    }
-                    egret.Tween.get(this._labelImg).to(paramObj, 200);
-                }
-                this._isZoom = false;
+        public get rollingZoomEnable():boolean {
+            return this._rollingZoomEnable;
+        }
+
+        /**
+         * 设置文字滚动放大倍数,默认是1.5倍
+         * @param value
+         */
+        public set rollingZoomValue(value:number){
+            this._rollingZoomValue = value;
+            if (this._rollingEffect) this._rollingEffect.zoomValue = value;
+        }
+        public get rollingZoomValue():number {
+            return this._rollingZoomValue;
+        }
+        /**
+         * 设置文字滚动的对齐方式
+         * @param value
+         */
+        public set rollingZoomAlign(value:string){
+            this._rollingZoomAlign = value;
+            if (this._rollingEffect) this._rollingEffect.zoomAlign = value;
+        }
+        public get rollingZoomAlign():string {
+            return this._rollingZoomAlign;
+        }
+     }
+}
+ class EffectNumberRolling{
+    public zoomEnable:boolean = false;
+    public zoomValue:number = 1;
+    public zoomAlign:string = egret.HorizontalAlign.CENTER;
+    private _isZoom:boolean = false;
+    private _zoomXOld:number = 1;
+    private _zoomYOld:number = 1;
+     private _xScale:number = 1;
+     private _yScale:number = 1;
+    private _xOld:number = 1;
+    private _yOld:number = 1;
+    private _lastRollString:string;
+    private _labelLength:number;
+    private _labelImg:easy.LabelImage = null;
+    private _rollingText:Array<string> = [];//用于滚动的数组
+    public constructor(lableImg:easy.LabelImage) {
+        this._labelImg = lableImg;
+        this._xOld = this._labelImg.x;
+        this._yOld = this._labelImg.y;
+    }
+    public setText(str:string){
+        var _oldLabelText:string = this._labelImg.text;
+        this._labelLength = parseInt(str);
+        var _length:string = this._labelLength + "";
+        //判断字符串是否是纯数字类型
+        if(_length.length == str.length){
+            //如果滚动数组中有值，将最后一个值记录 作为第二次跳转的起始值
+            if (this._rollingText.length > 0){
+                this._labelImg.setText(this._rollingText[this._rollingText.length -1]);
+                this._lastRollString = this._rollingText[this._rollingText.length -1];
             }
+            else{
+                this._lastRollString = _oldLabelText;//如果当前没有滚动，将labelImg当前值记录
+            }
+            this._rollingText.length = 0;
+            var tempNum:number;
+            var temp:string;
+            var step1:number,step2:number;
+            step1 = this.getStepValue(parseInt(this._lastRollString),parseInt(str));
+            //if(Math.abs(step1) <= 10){
+            //    if(step1 > 0){
+            //        step2 = 1;
+            //    }
+            //    else{
+            //        step2 = -1;
+            //    }
+            //}
+            //else if(Math.abs(step1) > 10){
+            //    step2 = Math.floor(step1 / 10);
+            //}
+            tempNum = parseInt(this._lastRollString) + step1;
+            temp = tempNum + "";
+            this._rollingText.push(temp);
+            if(step1 > 0){
+                while(parseInt(this._rollingText[this._rollingText.length - 1]) < parseInt(str)){
+                    if(step1 + parseInt(this._rollingText[this._rollingText.length - 1]) < parseInt(str)){
+                        tempNum += step1;
+                        temp = tempNum + "";
+                    }
+                    else {
+                        tempNum = parseInt(str);
+                        temp = tempNum + "";
+                    }
+                    this._rollingText.push(temp);
+                }
+            }
+            else if(step1 < 0){
+                    while(parseInt(this._rollingText[this._rollingText.length - 1]) > parseInt(str)){
+                        if(step1 + parseInt(this._rollingText[this._rollingText.length - 1]) > parseInt(str)){
+                            tempNum += step1;
+                            temp = tempNum + "";
+                        }
+                        else {
+                            tempNum = parseInt(str);
+                            temp = tempNum + "";
+                        }
+                        this._rollingText.push(temp);
+                    }
+            }
+            //做非匀速跳转启用
+            //var limitNum:number = parseInt(str) - step1 * 2;
+            //if(step1 > 0){
+            //    while(parseInt(this._rollingText[this._rollingText.length - 1]) < limitNum){
+            //        if(step1 + parseInt(this._rollingText[this._rollingText.length - 1] ) < limitNum){
+            //            tempNum += step1;
+            //            temp = tempNum + "";
+            //        }
+            //        else{
+            //            tempNum = limitNum;
+            //            temp = tempNum + "";
+            //        }
+            //        this._rollingText.push(temp);
+            //    }
+            //    while (parseInt(this._rollingText[this._rollingText.length - 1]) < parseInt(str)){
+            //       if(step2 + parseInt(this._rollingText[this._rollingText.length - 1] ) < parseInt(str)){
+            //           tempNum += step2;
+            //           temp = tempNum + ""
+            //       }
+            //        else{
+            //           tempNum = parseInt(str);
+            //           temp = tempNum +"";
+            //       }
+            //        this._rollingText.push(temp);
+            //    }
+            //}
+            //else if(step1 < 0){
+            //    while(parseInt(this._rollingText[this._rollingText.length - 1]) > limitNum){
+            //        if(step1 + parseInt(this._rollingText[this._rollingText.length - 1] ) > limitNum){
+            //            tempNum += step1;
+            //            temp = tempNum + "";
+            //        }
+            //        else{
+            //            tempNum = limitNum;
+            //            temp = tempNum + "";
+            //        }
+            //        this._rollingText.push(temp);
+            //    }
+            //    while (parseInt(this._rollingText[this._rollingText.length - 1]) > parseInt(str)){
+            //        if(step2 + parseInt(this._rollingText[this._rollingText.length - 1] ) > parseInt(str)){
+            //            tempNum += step2;
+            //            temp = tempNum + ""
+            //        }
+            //        else{
+            //            tempNum = parseInt(str);
+            //            temp = tempNum +"";
+            //        }
+            //        this._rollingText.push(temp);
+            //    }
+            //}
+        }
+        if(this.zoomValue != 1){
+            this._labelImg.scaleX = this.zoomValue;
+            this._labelImg.scaleY = this.zoomValue;
+            if(this.zoomValue > 1){
+                this._xScale = this._xOld - this._labelImg.width * (this._labelImg.scaleX - 1);
+                this._yScale = this._yOld - this._labelImg.height * (this._labelImg.scaleX - 1);
+            }
+            else if(this.zoomValue < 1){
+                this._xScale = this._xOld + this._labelImg.width * (this._labelImg.scaleX - 1);
+                this._yScale = this._yOld + this._labelImg.height * (this._labelImg.scaleX - 1);
+            }
+
+            if(this.zoomValue > 1){
+                if(this.zoomAlign == "center"){
+                    this._labelImg.x = this._xOld - this._labelImg.width * (this._labelImg.scaleX - 1) / 2;
+                    this._labelImg.y = this._yOld - this._labelImg.height * (this._labelImg.scaleY - 1) / 2;
+                }
+                else if(this.zoomAlign == "left"){
+                    this._labelImg.y = this._yOld - this._labelImg.height * (this._labelImg.scaleY - 1) / 2;
+                }
+                else if(this.zoomAlign == "right"){
+                    this._labelImg.x = this._xOld - this._labelImg.width * (this._labelImg.scaleX - 1);
+                    this._labelImg.y = this._yOld - this._labelImg.height * (this._labelImg.scaleY - 1) / 2;
+                }
+            }
+            else if(this.zoomValue < 1){
+                if(this.zoomAlign == "center"){
+                    this._labelImg.x = this._xOld + this._labelImg.width * (this._labelImg.scaleX - 1) / 2;
+                    this._labelImg.y = this._yOld + this._labelImg.height * (this._labelImg.scaleY - 1) / 2;
+                }
+                else if(this.zoomAlign == "left"){
+                    this._labelImg.y =  this._yOld + this._labelImg.height * (this._labelImg.scaleY - 1) / 2;
+                }
+                else if(this.zoomAlign == "right"){
+                    this._labelImg.x = this._xOld + this._labelImg.width * (this._labelImg.scaleX - 1);
+                    this._labelImg.y = this._yOld + this._labelImg.height * (this._labelImg.scaleY - 1) / 2;
+                }
+            }
+            this._isZoom = true;
+        }
+        easy.HeartBeat.addListener(this,this.onChangeText,3);
+    }
+
+
+    /**
+     * 根据最大和最小值,计算出增量多少合适
+     * @param min
+     * @param max
+     */
+    private getStepValue(num1:number, num2:number):number {
+        var tempStep = Math.abs(num1 - num2);
+        var value:number = 1;
+        if (tempStep < 30){//30次
+            value = 1;
+        } else if (tempStep < 60) {//30次
+            value = 2;
+        } else if (tempStep < 100) {//30次
+            value = 3;
+        } else if (tempStep < 200) {//40次
+            value = 5;
+        } else if (tempStep < 400) {//40次
+            value = 10;
+        } else if (tempStep < 800) {//40次
+            value = 20;
+        } else if (tempStep < 1500) {//50次
+            value = 30;
+        } else if (tempStep < 2500) {//60次
+            value = 40;
+        } else if (tempStep < 3500) {//70次
+            value = 50;
+        } else {
+            value = Math.floor(tempStep/(Math.round(tempStep/1000)*10 + 90));
+        }
+        if (num1 > num2){
+            value = -value;
+        }
+        return value;
+    }
+    private onChangeText():void {
+        if (this._rollingText.length > 0) {
+            this._labelImg.setText(this._rollingText.shift()) ;
+        } else {
+            easy.HeartBeat.removeListener(this, this.onChangeText);
+            if (this._isZoom){
+                var paramObj:Object = {scaleX:this._zoomXOld, scaleY:this._zoomYOld};
+                if (this._labelImg.anchorX == 0 && this._labelImg.anchorOffsetX == 0){
+                    paramObj["x"] = this._xOld;
+                }
+                if (this._labelImg.anchorY == 0 && this._labelImg.anchorOffsetY == 0){
+                    paramObj["y"] = this._yOld;
+                }
+                egret.Tween.get(this._labelImg).to(paramObj, 200);
+            }
+            this._isZoom = false;
         }
     }
 }
